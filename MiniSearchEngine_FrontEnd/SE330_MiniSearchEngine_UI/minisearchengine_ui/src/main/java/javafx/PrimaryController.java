@@ -20,6 +20,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import java.awt.Desktop;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -110,6 +112,7 @@ public class PrimaryController {
         title.setWrapText(true);
         title.setOnMouseEntered(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: true;"));
         title.setOnMouseExited(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: false;"));
+        title.setOnMouseClicked(e -> openResultUrl(item.url));
 
         Label link = new Label(valueOrDefault(item.url, ""));
         link.setStyle("-fx-text-fill: #202124; -fx-font-size: 12px;");
@@ -135,6 +138,33 @@ public class PrimaryController {
             return defaultValue == null ? "" : defaultValue;
         }
         return value;
+    }
+
+    private void openResultUrl(String rawUrl) {
+        String url = normalizeUrl(rawUrl);
+        if (url.isEmpty() || !Desktop.isDesktopSupported()
+                || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            return;
+        }
+
+        try {
+            Desktop.getDesktop().browse(URI.create(url));
+        } catch (IllegalArgumentException | IOException error) {
+            System.err.println("Cannot open URL: " + url);
+        }
+    }
+
+    private String normalizeUrl(String rawUrl) {
+        String url = valueOrDefault(rawUrl, "").trim();
+        if (url.isEmpty()) {
+            return "";
+        }
+
+        if (!url.matches("(?i)^[a-z][a-z0-9+.-]*://.*")) {
+            return "https://" + url;
+        }
+
+        return url;
     }
 
     private List<ResSearchItemDTO> getSearchItems(JsonElement data) {
