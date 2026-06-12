@@ -8,7 +8,11 @@
    <top>
       <HBox spacing="10.0" style="-fx-background-color: #f8f9fa; -fx-padding: 8; -fx-border-color: #e4e4e4; -fx-border-width: 0 0 1 0;" BorderPane.alignment="CENTER">
          <children>
+            <Button mnemonicParsing="false" onAction="#handleBack" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-text-fill: #3c4043; -fx-cursor: hand;" text="Back" />
+            <Button mnemonicParsing="false" onAction="#handleForward" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-text-fill: #3c4043; -fx-cursor: hand;" text="Forward" />
+            <Button mnemonicParsing="false" onAction="#handleReload" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-text-fill: #3c4043; -fx-cursor: hand;" text="Reload" />
             <Button mnemonicParsing="false" onAction="#handleNewTab" style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="+ Tab Tìm Kiếm Mới" />
+            <Button mnemonicParsing="false" onAction="#handleOpenHistory" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-text-fill: #3c4043; -fx-cursor: hand;" text="Lịch sử" />
          </children>
       </HBox>
    </top>

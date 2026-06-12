@@ -1,3 +1,14 @@
+error id: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java:_empty_/Label#setStyle#
+file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java
+empty definition using pc, found symbol in pc: _empty_/Label#setStyle#
+empty definition using semanticdb
+empty definition using fallback
+non-local guesses:
+
+offset: 11806
+uri: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java
+text:
+```scala
 package javafx;
 
 import java.net.URI;
@@ -291,7 +302,7 @@ public class PrimaryController {
         title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand;");
         title.setWrapText(true);
         title.setOnMouseEntered(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: true;"));
-        title.setOnMouseExited(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: false;"));
+        title.setOnMouseExited(e -> title.setStyl@@e("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: false;"));
         title.setOnMouseClicked(e -> openResultUrl(item.url, item.title, query));
 
         Label link = new Label(valueOrDefault(item.url, ""));
@@ -581,3 +592,9 @@ public class PrimaryController {
         }
     }
 }
+```
+
+
+#### Short summary: 
+
+empty definition using pc, found symbol in pc: _empty_/Label#setStyle#

@@ -5,6 +5,7 @@ module javafx {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.media;
+    requires javafx.web;
     opens javafx to com.google.gson, javafx.fxml;
     exports javafx;
 }

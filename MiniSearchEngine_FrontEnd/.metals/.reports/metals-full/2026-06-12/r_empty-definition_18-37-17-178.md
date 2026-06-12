@@ -1,17 +1,15 @@
-package javafx;
+error id: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java:javafx/PrimaryController#createNewTab#
+file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java
+empty definition using pc, found symbol in pc: javafx/PrimaryController#createNewTab#
+empty definition using semanticdb
+empty definition using fallback
+non-local guesses:
 
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
+offset: 1848
+uri: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java
+text:
+```scala
+package javafx;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -39,6 +37,20 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+
 public class PrimaryController {
 
     private static final String SEARCH_API_URL = "http://localhost:8080/search";
@@ -48,21 +60,12 @@ public class PrimaryController {
     private final Gson gson = new Gson();
     private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
-    // FXML Bindings cho thanh công cụ dùng chung ở phía trên
-    @FXML private TabPane mainTabPane;
-    @FXML private TextField urlBar;
-    @FXML private Button btnBack;
-    @FXML private Button btnForward;
-    @FXML private Button btnReload;
+    @FXML
+    private TabPane mainTabPane;
 
     @FXML
     public void initialize() {
-        // Lắng nghe sự kiện chuyển tab để cập nhật thanh URL và trạng thái nút bấm
-        mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            updateGlobalControls();
-        });
-
-        createNewTab();
+        @@createNewTab();
     }
 
     @FXML
@@ -75,163 +78,7 @@ public class PrimaryController {
         openHistoryTab();
     }
 
-    @FXML
-    private void handleBack(ActionEvent event) {
-        navigateSelectedBrowser(-1);
-    }
-
-    @FXML
-    private void handleForward(ActionEvent event) {
-        navigateSelectedBrowser(1);
-    }
-
-    @FXML
-    private void handleReload(ActionEvent event) {
-        reloadSelectedBrowser();
-    }
-
-    @FXML
-    private void handleUrlInput(ActionEvent event) {
-        String rawUrl = urlBar.getText().trim();
-        if (rawUrl.isEmpty()) return;
-
-        Tab selectedTab = mainTabPane.getSelectionModel().getSelectedItem();
-        if (selectedTab != null && selectedTab.getUserData() instanceof WebView) {
-            WebView browserView = (WebView) selectedTab.getUserData();
-            loadUrl(browserView.getEngine(), rawUrl);
-        } else {
-            openResultUrl(rawUrl, "Trang web", "");
-        }
-    }
-
-    private void updateGlobalControls() {
-        Tab selectedTab = mainTabPane.getSelectionModel().getSelectedItem();
-        if (selectedTab == null) return;
-
-        Object data = selectedTab.getUserData();
-        if (data instanceof WebView) {
-            WebView browserView = (WebView) data;
-            WebEngine engine = browserView.getEngine();
-            WebHistory history = engine.getHistory();
-
-            urlBar.setText(engine.getLocation());
-            urlBar.setDisable(false);
-
-            btnBack.setDisable(history.getCurrentIndex() <= 0);
-            btnForward.setDisable(history.getCurrentIndex() >= history.getEntries().size() - 1);
-            btnReload.setDisable(false);
-        } else {
-            // Nếu là tab Tìm kiếm hoặc Lịch sử
-            urlBar.setText("");
-            urlBar.setDisable(false); // Vẫn cho phép nhập url để tạo tab trình duyệt mới
-            btnBack.setDisable(true);
-            btnForward.setDisable(true);
-            btnReload.setDisable(true);
-        }
-    }
-
-    private void createNewTab() {
-    Tab newTab = new Tab("Tab mới");
-
-    BorderPane tabContentRoot = new BorderPane();
-    tabContentRoot.setStyle("-fx-background-color: #ffffff;");
-
-    // ---- MÀN HÌNH TRANG CHỦ (Ban đầu xếp dọc - VBox) ----
-    VBox homeContainer = new VBox(20);
-    homeContainer.setAlignment(Pos.CENTER);
-    homeContainer.setStyle("-fx-padding: 0 0 50 0;"); // Đẩy nhẹ trọng tâm lên trên cho đẹp
-
-    Label lblLogo = new Label("Google");
-    lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
-
-    HBox searchBarBox = new HBox(10);
-    searchBarBox.setAlignment(Pos.CENTER);
-
-    TextField txtSearch = new TextField();
-    txtSearch.setPromptText("Tìm kiếm trên Mini Google hoặc nhập một URL...");
-    txtSearch.setPrefWidth(500);
-    txtSearch.setStyle("-fx-font-size: 14px; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #dfe1e5; -fx-padding: 8 15 8 15;");
-
-    Button btnSearch = new Button("Tìm kiếm");
-    btnSearch.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #f8f9fa; -fx-text-fill: #3c4043; -fx-padding: 8 16 8 16; -fx-cursor: hand; -fx-background-radius: 4;");
-
-    searchBarBox.getChildren().addAll(txtSearch, btnSearch);
-    homeContainer.getChildren().addAll(lblLogo, searchBarBox);
-
-    // Mặc định ban đầu hiển thị trang chủ ở giữa màn hình
-    tabContentRoot.setCenter(homeContainer);
-
-    // ---- MÀN HÌNH KẾT QUẢ (Chuẩn bị sẵn ScrollPane) ----
-    ScrollPane scrollResults = new ScrollPane();
-    scrollResults.setFitToWidth(true);
-    scrollResults.setStyle("-fx-background-color: transparent; -fx-background: white; -fx-border-color: transparent;");
-
-    VBox vboxResults = new VBox(15);
-    vboxResults.setStyle("-fx-padding: 20 0 20 150;");
-    scrollResults.setContent(vboxResults);
-
-    // Thanh Header chứa Logo + Ô tìm kiếm nằm ngang khi sang trang kết quả
-    HBox topResultBar = new HBox(25);
-    topResultBar.setAlignment(Pos.CENTER_LEFT);
-    topResultBar.setStyle("-fx-padding: 15 20 15 20; -fx-background-color: #ffffff; -fx-border-color: #e4e4e4; -fx-border-width: 0 0 1 0;");
-
-    // Hành động xử lý khi bấm tìm kiếm hoặc nhấn Enter
-    Runnable searchAction = () -> {
-        String query = txtSearch.getText().trim();
-        if (query.isEmpty()) {
-            return;
-        }
-
-        // 1. Đổi tên tiêu đề Tab thành từ khóa ngắn gọn
-        newTab.setText(query.length() > 10 ? query.substring(0, 10) + "..." : query);
-
-        if (tabContentRoot.getTop() == null) {
-            homeContainer.getChildren().clear();
-
-            lblLogo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1a73e8; -fx-cursor: hand;");
-            
-            // Đổi căn lề thanh tìm kiếm về bên trái thay vì ở giữa
-            searchBarBox.setAlignment(Pos.CENTER_LEFT);
-            txtSearch.setPrefWidth(600); // Kéo dài ô nhập liệu ở trang kết quả cho rộng rãi
-
-            // Thêm Logo và Ô tìm kiếm nằm ngang sát nhau cạnh trên
-            topResultBar.getChildren().addAll(lblLogo, searchBarBox);
-
-            // Cấu trúc lại BorderPane: Thanh kiếm tìm đưa lên TOP, kết quả đưa vào CENTER
-            tabContentRoot.setTop(topResultBar);
-            tabContentRoot.setCenter(scrollResults);
-        }
-
-        // 3. Tiến hành xóa kết quả cũ và gọi API lấy dữ liệu mới (Từ khóa vẫn giữ nguyên trong txtSearch)
-        vboxResults.getChildren().clear();
-        search(query, vboxResults);
-    };
-
-    // Sự kiện Click Logo để quay lại trang chủ của Tab đó (nếu cần thiết)
-    lblLogo.setOnMouseClicked(e -> {
-        if (tabContentRoot.getTop() != null) {
-            topResultBar.getChildren().clear();
-            lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
-            searchBarBox.setAlignment(Pos.CENTER);
-            txtSearch.setPrefWidth(500);
-            
-            homeContainer.getChildren().addAll(lblLogo, searchBarBox);
-            tabContentRoot.setTop(null);
-            tabContentRoot.setCenter(homeContainer);
-            newTab.setText("Tab mới");
-        }
-    });
-
-    btnSearch.setOnAction(e -> searchAction.run());
-    txtSearch.setOnAction(e -> searchAction.run());
-
-    newTab.setContent(tabContentRoot);
-    mainTabPane.getTabs().add(newTab);
-    mainTabPane.getSelectionModel().select(newTab);
-}
-
     private void search(String query, VBox vboxResults) {
-        addSearchHistory(query);
         Label loading = new Label("Đang tìm kiếm...");
         loading.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
         vboxResults.getChildren().setAll(loading);
@@ -322,7 +169,9 @@ public class PrimaryController {
 
     private void openResultUrl(String rawUrl, String title, String query) {
         String url = normalizeUrl(rawUrl);
-        if (url.isEmpty()) return;
+        if (url.isEmpty()) {
+            return;
+        }
 
         addHistoryEntry(title, url, query);
         createBrowserTab(title, url);
@@ -341,33 +190,6 @@ public class PrimaryController {
         }
         mainTabPane.getTabs().add(createHistoryTab());
         mainTabPane.getSelectionModel().selectLast();
-    }
-
-    private void addSearchHistory(String query) {
-        if (query == null || query.isBlank()) return;
-        historyEntries.add(0, new HistoryEntry(LocalDateTime.now(), query, "Search: " + query, ""));
-    }
-
-    private void navigateSelectedBrowser(int offset) {
-        Tab selected = mainTabPane.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-        Object data = selected.getUserData();
-        if (!(data instanceof WebView)) return;
-        
-        WebHistory history = ((WebView) data).getEngine().getHistory();
-        int index = history.getCurrentIndex() + offset;
-        if (index >= 0 && index < history.getEntries().size()) {
-            history.go(offset);
-        }
-    }
-
-    private void reloadSelectedBrowser() {
-        Tab selected = mainTabPane.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
-        Object data = selected.getUserData();
-        if (data instanceof WebView) {
-            ((WebView) data).getEngine().reload();
-        }
     }
 
     private Tab createHistoryTab() {
@@ -424,7 +246,9 @@ public class PrimaryController {
 
         String normalizedFilter = filterText == null ? "" : filterText.trim().toLowerCase();
         for (HistoryEntry entry : historyEntries) {
-            if (!matchesFilter(entry, filterType, normalizedFilter)) continue;
+            if (!matchesFilter(entry, filterType, normalizedFilter)) {
+                continue;
+            }
 
             VBox itemBox = new VBox(4);
             itemBox.setStyle("-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #fafafa;");
@@ -465,10 +289,14 @@ public class PrimaryController {
         }
 
         switch (filterType) {
-            case "Truy vấn": return query.contains(normalizedFilter);
-            case "Tiêu đề": return title.contains(normalizedFilter);
-            case "URL": return urlText.contains(normalizedFilter);
-            default: return false;
+            case "Truy vấn":
+                return query.contains(normalizedFilter);
+            case "Tiêu đề":
+                return title.contains(normalizedFilter);
+            case "URL":
+                return urlText.contains(normalizedFilter);
+            default:
+                return false;
         }
     }
 
@@ -478,67 +306,114 @@ public class PrimaryController {
         BorderPane browserRoot = new BorderPane();
         browserRoot.setStyle("-fx-background-color: #ffffff;");
 
-        WebView browserView = new WebView();
-        browserTab.setUserData(browserView);
-        WebEngine engine = browserView.getEngine();
+        HBox browserBar = new HBox(8);
+        browserBar.setAlignment(Pos.CENTER_LEFT);
+        browserBar.setStyle("-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-color: #e4e4e4; -fx-border-width: 0 0 1 0;");
 
-        // Cập nhật trạng thái cho tab và thanh công cụ khi WebEngine tải dữ liệu
+        Button btnBack = new Button("Back");
+        Button btnForward = new Button("Forward");
+        Button btnReload = new Button("Reload");
+        TextField urlBar = new TextField(url);
+        urlBar.setPrefWidth(420);
+        Button btnGo = new Button("Đi đến");
+
+        Label statusLabel = new Label();
+        statusLabel.setStyle("-fx-text-fill: #5f6368; -fx-font-size: 12px;");
+
+        browserBar.getChildren().addAll(btnBack, btnForward, btnReload, urlBar, btnGo, statusLabel);
+
+        WebView browserView = new WebView();
+        WebEngine engine = browserView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                String pageTitle = engine.getTitle();
-                if (pageTitle != null) {
-                    browserTab.setText(pageTitle.length() > 18 ? pageTitle.substring(0, 18) + "..." : pageTitle);
-                }
-                
-                if (mainTabPane.getSelectionModel().getSelectedItem() == browserTab) {
-                    updateGlobalControls();
-                }
+                urlBar.setText(engine.getLocation());
+                statusLabel.setText("Đã tải xong");
+                updateNavigationButtons(engine.getHistory(), btnBack, btnForward);
+            } else if (newState == Worker.State.RUNNING) {
+                statusLabel.setText("Đang tải...");
+            } else if (newState == Worker.State.FAILED) {
+                statusLabel.setText("Không thể tải trang");
             }
         });
 
-        // Lắng nghe khi đường dẫn thay đổi (ví dụ người dùng click vào link trên web)
-        engine.locationProperty().addListener((obs, oldLoc, newLoc) -> {
-            if (mainTabPane.getSelectionModel().getSelectedItem() == browserTab) {
-                urlBar.setText(newLoc);
+        btnBack.setOnAction(e -> {
+            WebHistory history = engine.getHistory();
+            if (history.getCurrentIndex() > 0) {
+                history.go(-1);
             }
         });
 
+        btnForward.setOnAction(e -> {
+            WebHistory history = engine.getHistory();
+            if (history.getCurrentIndex() + 1 < history.getEntries().size()) {
+                history.go(1);
+            }
+        });
+
+        btnReload.setOnAction(e -> engine.reload());
+        btnGo.setOnAction(e -> loadUrl(engine, urlBar.getText().trim(), urlBar, statusLabel));
+        urlBar.setOnAction(e -> loadUrl(engine, urlBar.getText().trim(), urlBar, statusLabel));
+
+        browserRoot.setTop(browserBar);
         browserRoot.setCenter(browserView);
         browserTab.setContent(browserRoot);
 
         mainTabPane.getTabs().add(browserTab);
         mainTabPane.getSelectionModel().select(browserTab);
 
-        loadUrl(engine, url);
+        loadUrl(engine, url, urlBar, statusLabel);
     }
 
-    private void loadUrl(WebEngine engine, String rawUrl) {
+    private void loadUrl(WebEngine engine, String rawUrl, TextField urlBar, Label statusLabel) {
         String normalized = normalizeUrl(rawUrl);
-        if (normalized.isEmpty()) return;
+        urlBar.setText(normalized);
+        if (normalized.isEmpty()) {
+            statusLabel.setText("URL không hợp lệ");
+            return;
+        }
         engine.load(normalized);
+    }
+
+    private void updateNavigationButtons(WebHistory history, Button btnBack, Button btnForward) {
+        btnBack.setDisable(history.getCurrentIndex() <= 0);
+        btnForward.setDisable(history.getCurrentIndex() >= history.getEntries().size() - 1);
     }
 
     private String normalizeUrl(String rawUrl) {
         String url = valueOrDefault(rawUrl, "").trim();
-        if (url.isEmpty()) return "";
-        if (!url.matches("(?i)^[a-z][a-z0-9+.-]*://.*")) return "https://" + url;
+        if (url.isEmpty()) {
+            return "";
+        }
+
+        if (!url.matches("(?i)^[a-z][a-z0-9+.-]*://.*")) {
+            return "https://" + url;
+        }
+
         return url;
     }
 
     private List<ResSearchItemDTO> getSearchItems(JsonElement data) {
-        if (data == null || data.isJsonNull()) return Collections.emptyList();
-        if (data.isJsonArray()) {
-            return gson.fromJson(data, new TypeToken<List<ResSearchItemDTO>>() {}.getType());
+        if (data == null || data.isJsonNull()) {
+            return Collections.emptyList();
         }
+
+        if (data.isJsonArray()) {
+            return gson.fromJson(data, new TypeToken<List<ResSearchItemDTO>>() {
+            }.getType());
+        }
+
         if (data.isJsonObject()) {
             JsonObject dataObject = data.getAsJsonObject();
             JsonElement items = dataObject.get("items");
             if (items != null && items.isJsonArray()) {
-                return gson.fromJson(items, new TypeToken<List<ResSearchItemDTO>>() {}.getType());
+                return gson.fromJson(items, new TypeToken<List<ResSearchItemDTO>>() {
+                }.getType());
             }
+
             ResSearchItemDTO item = gson.fromJson(dataObject, ResSearchItemDTO.class);
             return item == null ? Collections.emptyList() : Collections.singletonList(item);
         }
+
         return Collections.emptyList();
     }
 
@@ -581,3 +456,10 @@ public class PrimaryController {
         }
     }
 }
+
+```
+
+
+#### Short summary: 
+
+empty definition using pc, found symbol in pc: javafx/PrimaryController#createNewTab#
