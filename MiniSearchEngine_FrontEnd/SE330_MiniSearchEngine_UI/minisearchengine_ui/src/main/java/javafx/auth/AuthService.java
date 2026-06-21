@@ -35,9 +35,9 @@ public class AuthService {
    * @param password user password
    * @return LoginResponse hoặc null nếu fail
    */
-  public LoginResponse login(String email, String password) throws Exception {
+  public LoginResponse login(String username, String password) throws Exception {
     JsonObject body = new JsonObject();
-    body.addProperty("email", email);
+    body.addProperty("username", username);
     body.addProperty("password", password);
 
     HttpRequest request = HttpRequest.newBuilder()
@@ -69,11 +69,10 @@ public class AuthService {
    * @param name     user name
    * @return RegisterResponse hoặc null nếu fail
    */
-  public RegisterResponse register(String email, String password, String name) throws Exception {
+  public RegisterResponse register(String username, String password) throws Exception {
     JsonObject body = new JsonObject();
-    body.addProperty("email", email);
+    body.addProperty("username", username);
     body.addProperty("password", password);
-    body.addProperty("name", name);
 
     HttpRequest request = HttpRequest.newBuilder()
         .uri(URI.create(REGISTER_ENDPOINT))
@@ -98,16 +97,18 @@ public class AuthService {
   /**
    * Tạo Task để login async
    */
-  public Task<Boolean> loginAsync(String email, String password, Consumer<String> onSuccess, Consumer<String> onError) {
+  public Task<Boolean> loginAsync(String username, String password, Consumer<String> onSuccess, Consumer<String> onError) {
     return new Task<Boolean>() {
       @Override
       protected Boolean call() {
         try {
-          LoginResponse response = login(email, password);
+          LoginResponse response = login(username, password);
           if (response != null && response.access_token != null) {
+            // Map username to email field for compatibility
+            String userEmail = response.user.username != null ? response.user.username : response.user.email;
             UserSession.getInstance().login(
                 response.user.id,
-                response.user.email,
+                userEmail,
                 response.user.name,
                 response.access_token);
             onSuccess.accept("Login successful");
@@ -126,13 +127,13 @@ public class AuthService {
   /**
    * Tạo Task để register async
    */
-  public Task<Boolean> registerAsync(String email, String password, String name, Consumer<String> onSuccess,
+  public Task<Boolean> registerAsync(String username, String password, Consumer<String> onSuccess,
       Consumer<String> onError) {
     return new Task<Boolean>() {
       @Override
       protected Boolean call() {
         try {
-          RegisterResponse response = register(email, password, name);
+          RegisterResponse response = register(username, password);
           if (response != null) {
             onSuccess.accept("Register successful");
             return true;
@@ -217,6 +218,7 @@ public Task<Boolean> logoutAsync(
     public static class UserInfo {
       public Long id;
       public String email;
+      public String username;
       public String name;
     }
   }

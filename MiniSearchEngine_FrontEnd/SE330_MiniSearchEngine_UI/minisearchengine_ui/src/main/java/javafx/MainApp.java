@@ -1,5 +1,7 @@
 package javafx;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.auth.AuthService;
 import javafx.auth.UserSession;
@@ -7,8 +9,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class MainApp extends Application {
     private static Stage stage;
@@ -19,15 +19,14 @@ public class MainApp extends Application {
 
             try {
                 auth.register(
-                        "test@gmail.com",
-                        "123456",
-                        "Test User");
+                        "user",
+                        "123456");
             } catch (Exception ignored) {
                 // Email đã tồn tại thì bỏ qua
             }
 
             var login = auth.login(
-                    "test@gmail.com",
+                    "user",
                     "123456");
 
             UserSession.getInstance().login(
@@ -44,17 +43,14 @@ public class MainApp extends Application {
     @Override
     public void start(@SuppressWarnings("exports") Stage s) throws IOException {
         stage = s;
-        System.out.println("Auto Login");
-        autoLogin();
-        System.out.println("Logged In = " +
-                UserSession.getInstance().isLoggedIn());
+        // Try to reload any existing session, otherwise start at login
+        UserSession.getInstance().reload();
 
-        System.out.println("User ID = " +
-                UserSession.getInstance().getUserId());
-
-        System.out.println("Token = " +
-                UserSession.getInstance().getAccessToken());
-        setRoot("primary", "");
+        if (UserSession.getInstance().isLoggedIn()) {
+            setRoot("primary", "MiniSearchEngine");
+        } else {
+            setRoot("login", "Đăng nhập");
+        }
 
     }
 

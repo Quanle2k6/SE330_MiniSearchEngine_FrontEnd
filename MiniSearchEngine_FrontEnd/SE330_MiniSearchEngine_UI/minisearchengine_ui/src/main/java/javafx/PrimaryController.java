@@ -1,6 +1,6 @@
 package javafx;
 
-import java.net.URI;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +18,9 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import javafx.application.Platform;
+import javafx.auth.AuthService;
+import javafx.auth.HttpClientUtil;
+import javafx.auth.UserSession;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -37,9 +40,6 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
-import javafx.auth.HttpClientUtil;
-import javafx.auth.UserSession;
-
 public class PrimaryController {
 
     private static final String SEARCH_API_URL = "http://localhost:8080/search";
@@ -56,6 +56,7 @@ public class PrimaryController {
     @FXML private Button btnBack;
     @FXML private Button btnForward;
     @FXML private Button btnReload;
+    @FXML private Button btnLogout;
 
     @FXML
     public void initialize() {
@@ -65,6 +66,11 @@ public class PrimaryController {
         });
 
         createNewTab();
+
+        // Nếu đã đăng nhập, tự động mở tab Lịch sử truy cập
+        if (UserSession.getInstance().isLoggedIn()) {
+            openHistoryTab();
+        }
     }
 
     @FXML
@@ -106,6 +112,33 @@ public class PrimaryController {
         } else {
             openResultUrl(rawUrl, "Trang web", "");
         }
+    }
+
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        AuthService auth = new AuthService();
+        var task = auth.logoutAsync(msg -> {
+            Platform.runLater(() -> {
+                try {
+                    MainApp.setRoot("login", "Đăng nhập");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }, err -> {
+            Platform.runLater(() -> {
+                System.err.println("Logout failed: " + err);
+                try {
+                    MainApp.setRoot("login", "Đăng nhập");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
     }
 
     private void updateGlobalControls() {

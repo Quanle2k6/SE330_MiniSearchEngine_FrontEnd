@@ -15,6 +15,7 @@
             <TextField fx:id="urlBar" onAction="#handleUrlInput" prefWidth="360.0" promptText="Nhap URL..." style="-fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: #dfe1e5; -fx-padding: 6 12 6 12;" HBox.hgrow="ALWAYS" />
             <Button mnemonicParsing="false" onAction="#handleNewTab" style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="+ Tab Tìm Kiếm Mới" />
             <Button mnemonicParsing="false" onAction="#handleOpenHistory" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-text-fill: #3c4043; -fx-cursor: hand;" text="Lịch sử" />
+            <Button fx:id="btnLogout" mnemonicParsing="false" onAction="#handleLogout" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-text-fill: #d93025; -fx-cursor: hand;" text="Đăng xuất" />
          </children>
       </HBox>
    </top>
