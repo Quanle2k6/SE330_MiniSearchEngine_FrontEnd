@@ -2,11 +2,8 @@ package javafx;
 
 import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -40,6 +37,9 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
 
+import javafx.auth.HttpClientUtil;
+import javafx.auth.UserSession;
+
 public class PrimaryController {
 
     private static final String SEARCH_API_URL = "http://localhost:8080/search";
@@ -47,7 +47,6 @@ public class PrimaryController {
     private static final int HISTORY_PAGE_SIZE = 50;
     private static final DateTimeFormatter HISTORY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
     private final Gson gson = new Gson();
     private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
@@ -251,12 +250,9 @@ public class PrimaryController {
         vboxResults.getChildren().setAll(loading);
 
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20");
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(SEARCH_API_URL + "?query=" + encodedQuery))
-                .GET()
-                .build();
-
-        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        String url = SEARCH_API_URL + "?query=" + encodedQuery;
+        
+        HttpClientUtil.getAsync(url)
                 .thenAccept(response -> Platform.runLater(() -> handleSearchResponse(response, vboxResults, query)))
                 .exceptionally(error -> {
                     Platform.runLater(() -> showMessage(vboxResults, "Không thể kết nối tới server localhost:8080."));
@@ -266,7 +262,12 @@ public class PrimaryController {
 
     private void handleSearchResponse(HttpResponse<String> response, VBox vboxResults, String query) {
         if (response.statusCode() != 200) {
-            showMessage(vboxResults, "Tìm kiếm thất bại. Mã lỗi: " + response.statusCode());
+            if(response.statusCode() == 401) {
+                showMessage(vboxResults, "Bạn cần đăng nhập để thực hiện tìm kiếm.");
+            } else {
+                showMessage(vboxResults, "Tìm kiếm thất bại. Mã lỗi: " + response.statusCode());
+                
+            }
             return;
         }
 
@@ -354,15 +355,14 @@ public class PrimaryController {
     }
 
     private void postSearchHistory(JsonObject body) {
+        // Check if user is authenticated before posting
+        if (!UserSession.getInstance().isLoggedIn()) {
+            System.err.println("Save search history skipped: User not logged in");
+            return;
+        }
+        
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(SEARCH_HISTORY_API_URL))
-                    .timeout(Duration.ofSeconds(2))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(body), StandardCharsets.UTF_8))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = HttpClientUtil.post(SEARCH_HISTORY_API_URL, gson.toJson(body));
             if (response.statusCode() >= 400) {
                 System.err.println("Save search history failed: HTTP " + response.statusCode() + " - " + response.body());
             }
@@ -457,18 +457,23 @@ public class PrimaryController {
 
     private void refreshHistoryList(VBox listContainer, String filterType, String filterText) {
         listContainer.getChildren().clear();
+        
+        // Check if user is authenticated
+        if (!UserSession.getInstance().isLoggedIn()) {
+            Label message = new Label("Vui lòng đăng nhập để xem lịch sử tìm kiếm.");
+            message.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
+            listContainer.getChildren().add(message);
+            return;
+        }
+        
         boolean useApiHistory = true;
         if (useApiHistory) {
             Label loading = new Label("Dang tai lich su...");
             loading.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
             listContainer.getChildren().add(loading);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(SEARCH_HISTORY_API_URL + "?page=0&size=" + HISTORY_PAGE_SIZE))
-                    .GET()
-                    .build();
-
-            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            String url = SEARCH_HISTORY_API_URL + "?page=0&size=" + HISTORY_PAGE_SIZE;
+            HttpClientUtil.getAsync(url)
                     .thenAccept(response -> Platform.runLater(() -> handleHistoryResponse(response, listContainer, filterType, filterText)))
                     .exceptionally(error -> {
                         Platform.runLater(() -> showMessage(listContainer, "Khong the tai lich su tu server."));

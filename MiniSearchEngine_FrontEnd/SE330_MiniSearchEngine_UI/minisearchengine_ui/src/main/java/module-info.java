@@ -6,6 +6,7 @@ module javafx {
     requires javafx.fxml;
     requires javafx.media;
     requires javafx.web;
+    requires java.prefs;
     opens javafx to com.google.gson, javafx.fxml;
     exports javafx;
 }
