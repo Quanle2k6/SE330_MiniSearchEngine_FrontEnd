@@ -8,5 +8,6 @@ module javafx {
     requires javafx.web;
     requires java.prefs;
     opens javafx to com.google.gson, javafx.fxml;
+    opens javafx.auth to com.google.gson;
     exports javafx;
 }

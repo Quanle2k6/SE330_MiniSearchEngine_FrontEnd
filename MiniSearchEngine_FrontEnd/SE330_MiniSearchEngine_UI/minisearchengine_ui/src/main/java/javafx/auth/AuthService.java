@@ -35,9 +35,9 @@ public class AuthService {
    * @param password user password
    * @return LoginResponse hoặc null nếu fail
    */
-  public LoginResponse login(String username, String password) throws Exception {
+  public LoginResponse login(String email, String password) throws Exception {
     JsonObject body = new JsonObject();
-    body.addProperty("username", username);
+    body.addProperty("email", email);
     body.addProperty("password", password);
 
     HttpRequest request = HttpRequest.newBuilder()
@@ -50,15 +50,11 @@ public class AuthService {
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     ApiResponse<LoginResponse> apiResponse = ApiResponse.fromJson(response.body(), LoginResponse.class);
 
-    if (response.statusCode() == 200) {
-
-      if (apiResponse != null && apiResponse.isSuccess() && apiResponse.data != null) {
-
-        return apiResponse.data;
-      }
+    if (isHttpSuccess(response) && apiResponse != null && apiResponse.data != null) {
+      return apiResponse.data;
     }
 
-    throw new Exception("Login failed: " + apiResponse.message);
+    throw new Exception(getResponseMessage(response, apiResponse));
   }
 
   /**
@@ -69,9 +65,10 @@ public class AuthService {
    * @param name     user name
    * @return RegisterResponse hoặc null nếu fail
    */
-  public RegisterResponse register(String username, String password) throws Exception {
+  public RegisterResponse register(String email, String name, String password) throws Exception {
     JsonObject body = new JsonObject();
-    body.addProperty("username", username);
+    body.addProperty("email", email);
+    body.addProperty("name", name);
     body.addProperty("password", password);
 
     HttpRequest request = HttpRequest.newBuilder()
@@ -82,30 +79,27 @@ public class AuthService {
         .build();
 
     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      ApiResponse<RegisterResponse> apiResponse = ApiResponse.fromJson(response.body(), RegisterResponse.class);
+    ApiResponse<RegisterResponse> apiResponse = ApiResponse.fromJson(response.body(), RegisterResponse.class);
 
-    if (response.statusCode() == 201 || response.statusCode() == 200) {
-
-      if (apiResponse != null && apiResponse.isSuccess() && apiResponse.data != null) {
-        return apiResponse.data;
-      }
+    if (isHttpSuccess(response) && apiResponse != null && apiResponse.data != null) {
+      return apiResponse.data;
     }
 
-    throw new Exception("Register failed: " + apiResponse.message);
+    throw new Exception(getResponseMessage(response, apiResponse));
   }
 
   /**
    * Tạo Task để login async
    */
-  public Task<Boolean> loginAsync(String username, String password, Consumer<String> onSuccess, Consumer<String> onError) {
+  public Task<Boolean> loginAsync(String email, String password, Consumer<String> onSuccess, Consumer<String> onError) {
     return new Task<Boolean>() {
       @Override
       protected Boolean call() {
         try {
-          LoginResponse response = login(username, password);
-          if (response != null && response.access_token != null) {
-            // Map username to email field for compatibility
-            String userEmail = response.user.username != null ? response.user.username : response.user.email;
+          LoginResponse response = login(email, password);
+          if (response != null && response.access_token != null && response.user != null) {
+            // Keep compatibility if an older response still uses username.
+            String userEmail = response.user.email != null ? response.user.email : response.user.username;
             UserSession.getInstance().login(
                 response.user.id,
                 userEmail,
@@ -114,10 +108,10 @@ public class AuthService {
             onSuccess.accept("Login successful");
             return true;
           }
-          onError.accept("Login failed: Invalid response");
+          onError.accept("Invalid login response");
           return false;
         } catch (Exception e) {
-          onError.accept(e.getMessage());
+          onError.accept(getExceptionMessage(e));
           return false;
         }
       }
@@ -127,21 +121,21 @@ public class AuthService {
   /**
    * Tạo Task để register async
    */
-  public Task<Boolean> registerAsync(String username, String password, Consumer<String> onSuccess,
+  public Task<Boolean> registerAsync(String email, String name, String password, Consumer<String> onSuccess,
       Consumer<String> onError) {
     return new Task<Boolean>() {
       @Override
       protected Boolean call() {
         try {
-          RegisterResponse response = register(username, password);
+          RegisterResponse response = register(email, name, password);
           if (response != null) {
             onSuccess.accept("Register successful");
             return true;
           }
-          onError.accept("Register failed: Invalid response");
+          onError.accept("Invalid register response");
           return false;
         } catch (Exception e) {
-          onError.accept(e.getMessage());
+          onError.accept(getExceptionMessage(e));
           return false;
         }
       }
@@ -209,6 +203,33 @@ public Task<Boolean> logoutAsync(
         }
     };
 }
+
+  private boolean isHttpSuccess(HttpResponse<String> response) {
+    return response.statusCode() >= 200 && response.statusCode() < 300;
+  }
+
+  private String getResponseMessage(HttpResponse<String> response, ApiResponse<?> apiResponse) {
+    if (apiResponse != null) {
+      String message = apiResponse.getErrorMessage();
+      if (message != null && !message.isBlank() && !"Unknown error".equals(message)) {
+        return message;
+      }
+    }
+
+    String body = response.body();
+    if (body != null && !body.isBlank()) {
+      return "HTTP " + response.statusCode() + ": " + body;
+    }
+
+    return "HTTP " + response.statusCode();
+  }
+
+  private String getExceptionMessage(Exception e) {
+    String message = e.getMessage();
+    return message == null || message.isBlank()
+        ? "Cannot connect to auth server"
+        : message;
+  }
 
   // DTOs
   public static class LoginResponse {

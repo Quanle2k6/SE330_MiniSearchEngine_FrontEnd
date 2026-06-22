@@ -19,14 +19,15 @@ public class MainApp extends Application {
 
             try {
                 auth.register(
-                        "user",
+                        "user@example.com",
+                        "User",
                         "123456");
             } catch (Exception ignored) {
                 // Email đã tồn tại thì bỏ qua
             }
 
             var login = auth.login(
-                    "user",
+                    "user@example.com",
                     "123456");
 
             UserSession.getInstance().login(

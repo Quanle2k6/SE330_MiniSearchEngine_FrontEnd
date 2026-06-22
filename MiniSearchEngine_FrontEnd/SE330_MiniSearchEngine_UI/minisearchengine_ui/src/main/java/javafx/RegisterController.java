@@ -12,7 +12,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class RegisterController {
-    @FXML private TextField txtUsername;
+    @FXML private TextField txtEmail;
+    @FXML private TextField txtName;
     @FXML private PasswordField txtPassword;
     @FXML private PasswordField txtPasswordConfirm;
     @FXML private Button btnRegister;
@@ -28,12 +29,13 @@ public class RegisterController {
 
     @FXML
     private void handleRegister() {
-        String username = txtUsername.getText().trim();
+        String email = txtEmail.getText().trim();
+        String name = txtName.getText().trim();
         String password = txtPassword.getText().trim();
         String confirm = txtPasswordConfirm.getText().trim();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            lblMessage.setText("Vui lòng nhập username và mật khẩu.");
+        if (email.isEmpty() || name.isEmpty() || password.isEmpty()) {
+            lblMessage.setText("Vui lòng nhập email, họ tên và mật khẩu.");
             return;
         }
 
@@ -44,7 +46,7 @@ public class RegisterController {
 
         btnRegister.setDisable(true);
 
-        Task<Boolean> task = authService.registerAsync(username, password, successMsg -> {
+        Task<Boolean> task = authService.registerAsync(email, name, password, successMsg -> {
             Platform.runLater(() -> {
                 lblMessage.setText("Đăng ký thành công. Vui lòng đăng nhập.");
                 try {

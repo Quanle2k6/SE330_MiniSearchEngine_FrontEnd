@@ -27,8 +27,8 @@ public class AuthExample {
     try {
       // var register = auth.register(
       // "test1@gmail.com",
-      // "123456",
-      // "Test"
+      // "Test",
+      // "123456"
       // );
 
       // System.out.println(register.email);

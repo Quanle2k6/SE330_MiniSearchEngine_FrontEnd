@@ -13,7 +13,7 @@ import javafx.scene.control.TextField;
 
 public class LoginController {
 
-    @FXML private TextField txtUsername;
+    @FXML private TextField txtEmail;
     @FXML private PasswordField txtPassword;
     @FXML private Button btnLogin;
     @FXML private Button btnShowRegister;
@@ -28,16 +28,16 @@ public class LoginController {
 
     @FXML
     private void handleLogin() {
-        String username = txtUsername.getText().trim();
+        String email = txtEmail.getText().trim();
         String password = txtPassword.getText().trim();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            lblMessage.setText("Vui lòng nhập username và mật khẩu.");
+        if (email.isEmpty() || password.isEmpty()) {
+            lblMessage.setText("Vui lòng nhập email và mật khẩu.");
             return;
         }
 
         btnLogin.setDisable(true);
-        Task<Boolean> task = authService.loginAsync(username, password, successMsg -> {
+        Task<Boolean> task = authService.loginAsync(email, password, successMsg -> {
             Platform.runLater(() -> {
                 try {
                     MainApp.setRoot("primary", "MiniSearchEngine");

@@ -8,7 +8,8 @@
 <VBox spacing="12" alignment="CENTER" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="javafx.RegisterController" style="-fx-padding: 40; -fx-background-color: #ffffff;">
     <children>
         <Label text="Đăng ký" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;" />
-        <TextField fx:id="txtUsername" promptText="Tên đăng nhập" />
+        <TextField fx:id="txtEmail" promptText="Email" />
+        <TextField fx:id="txtName" promptText="Họ tên" />
         <PasswordField fx:id="txtPassword" promptText="Mật khẩu" />
         <PasswordField fx:id="txtPasswordConfirm" promptText="Xác nhận mật khẩu" />
         <Button fx:id="btnRegister" text="Đăng ký" onAction="#handleRegister" style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-cursor: hand; -fx-padding: 8 20 8 20;" />
