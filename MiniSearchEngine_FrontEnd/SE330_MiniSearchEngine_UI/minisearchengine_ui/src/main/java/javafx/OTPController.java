@@ -5,8 +5,11 @@ import java.util.List;
 
 import javafx.application.Platform;
 import javafx.auth.AuthService;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -80,9 +83,19 @@ public class OTPController {
         }
 
         btnVerify.setDisable(true);
-        authService.verifyOtpAsync(email, otp, successMsg -> {
+        btnResendOtp.setDisable(true);
+
+        Task<Boolean> task = authService.verifyOtpAsync(email, otp, successMsg -> {
             Platform.runLater(() -> {
                 lblMessage.setText("Xác thực OTP thành công. Vui lòng đăng nhập.");
+                Alert alert = new Alert(
+                        Alert.AlertType.INFORMATION,
+                        "Tài khoản của bạn đã được xác thực. Vui lòng đăng nhập để tiếp tục.",
+                        ButtonType.OK);
+                alert.setTitle("Xác thực OTP");
+                alert.setHeaderText("Xác thực thành công");
+                alert.showAndWait();
+
                 try {
                     MainApp.setRoot("login", "Đăng nhập");
                 } catch (IOException e) {
@@ -99,6 +112,10 @@ public class OTPController {
                 btnResendOtp.setDisable(false);
             });
         });
+
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
     }
 
     @FXML
@@ -113,7 +130,7 @@ public class OTPController {
         btnResendOtp.setDisable(true);
         lblMessage.setText("Đang gửi lại mã OTP...");
 
-        authService.resendOtpAsync(email, successMsg -> {
+        Task<Boolean> task = authService.resendOtpAsync(email, successMsg -> {
             Platform.runLater(() -> {
                 lblMessage.setText("Mã OTP đã được gửi lại. Vui lòng kiểm tra email.");
                 btnResendOtp.setDisable(false);
@@ -124,6 +141,10 @@ public class OTPController {
                 btnResendOtp.setDisable(false);
             });
         });
+
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        t.start();
     }
 
     @FXML
