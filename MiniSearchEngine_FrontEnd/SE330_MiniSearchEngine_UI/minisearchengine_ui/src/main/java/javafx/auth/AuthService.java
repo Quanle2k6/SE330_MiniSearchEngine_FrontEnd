@@ -19,6 +19,7 @@ public class AuthService {
   private static final String LOGIN_ENDPOINT = BASE_URL + "/login";
   private static final String REGISTER_ENDPOINT = BASE_URL + "/register";
   private static final String VERIFY_OTP_ENDPOINT = BASE_URL + "/verify-otp";
+  private static final String RESEND_OTP_ENDPOINT = BASE_URL + "/resend-otp";
   private static final String LOGOUT_ENDPOINT = BASE_URL + "/logout";
 
   private final HttpClient httpClient;
@@ -176,6 +177,46 @@ public class AuthService {
             return true;
           }
           onError.accept("Invalid OTP response");
+          return false;
+        } catch (Exception e) {
+          onError.accept(getExceptionMessage(e));
+          return false;
+        }
+      }
+    };
+  }
+
+  public boolean resendOtp(String email) throws Exception {
+    JsonObject body = new JsonObject();
+    body.addProperty("email", email);
+
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create(RESEND_OTP_ENDPOINT))
+        .timeout(Duration.ofSeconds(10))
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(body), StandardCharsets.UTF_8))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    ApiResponse<Void> apiResponse = ApiResponse.fromJson(response.body(), Void.class);
+
+    if (isHttpSuccess(response) && (apiResponse == null || !apiResponse.isError())) {
+      return true;
+    }
+
+    throw new Exception(getResponseMessage(response, apiResponse));
+  }
+
+  public Task<Boolean> resendOtpAsync(String email, Consumer<String> onSuccess, Consumer<String> onError) {
+    return new Task<Boolean>() {
+      @Override
+      protected Boolean call() {
+        try {
+          if (resendOtp(email)) {
+            onSuccess.accept("Resend OTP successful");
+            return true;
+          }
+          onError.accept("Invalid resend OTP response");
           return false;
         } catch (Exception e) {
           onError.accept(getExceptionMessage(e));

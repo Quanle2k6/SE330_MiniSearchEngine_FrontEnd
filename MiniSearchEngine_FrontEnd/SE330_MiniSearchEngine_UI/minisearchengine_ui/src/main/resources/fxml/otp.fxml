@@ -20,6 +20,7 @@
             </children>
         </HBox>
         <Button fx:id="btnVerify" text="Xác thực" onAction="#handleVerifyOtp" style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-cursor: hand; -fx-padding: 8 20 8 20;" />
+        <Button fx:id="btnResendOtp" text="Gửi lại mã OTP" onAction="#handleResendOtp" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-cursor: hand;" />
         <Button fx:id="btnBackLogin" text="Quay lại đăng nhập" onAction="#handleBackLogin" style="-fx-background-color: #ffffff; -fx-border-color: #dfe1e5; -fx-cursor: hand;" />
         <Label fx:id="lblMessage" text="" wrapText="true" style="-fx-text-fill: #d93025; -fx-font-size: 13px;" />
     </children>

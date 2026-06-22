@@ -21,6 +21,7 @@ public class OTPController {
     @FXML private TextField txtOtp5;
     @FXML private TextField txtOtp6;
     @FXML private Button btnVerify;
+    @FXML private Button btnResendOtp;
     @FXML private Button btnBackLogin;
     @FXML private Label lblMessage;
 
@@ -88,12 +89,39 @@ public class OTPController {
                     e.printStackTrace();
                     lblMessage.setText("OTP xác thực thành công nhưng không thể chuyển sang đăng nhập.");
                     btnVerify.setDisable(false);
+                    btnResendOtp.setDisable(false);
                 }
             });
         }, errorMsg -> {
             Platform.runLater(() -> {
                 lblMessage.setText("Xác thực OTP thất bại: " + errorMsg);
                 btnVerify.setDisable(false);
+                btnResendOtp.setDisable(false);
+            });
+        });
+    }
+
+    @FXML
+    private void handleResendOtp() {
+        String email = RegisterController.pendingOtpEmail;
+
+        if (email == null || email.isBlank()) {
+            lblMessage.setText("Không có dữ liệu đăng ký. Vui lòng quay lại đăng ký.");
+            return;
+        }
+
+        btnResendOtp.setDisable(true);
+        lblMessage.setText("Đang gửi lại mã OTP...");
+
+        authService.resendOtpAsync(email, successMsg -> {
+            Platform.runLater(() -> {
+                lblMessage.setText("Mã OTP đã được gửi lại. Vui lòng kiểm tra email.");
+                btnResendOtp.setDisable(false);
+            });
+        }, errorMsg -> {
+            Platform.runLater(() -> {
+                lblMessage.setText("Gửi lại OTP thất bại: " + errorMsg);
+                btnResendOtp.setDisable(false);
             });
         });
     }
