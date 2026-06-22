@@ -18,6 +18,7 @@ public class AuthService {
   private static final String BASE_URL = "http://localhost:8080/api/v1/auth";
   private static final String LOGIN_ENDPOINT = BASE_URL + "/login";
   private static final String REGISTER_ENDPOINT = BASE_URL + "/register";
+  private static final String VERIFY_OTP_ENDPOINT = BASE_URL + "/verify-otp";
   private static final String LOGOUT_ENDPOINT = BASE_URL + "/logout";
 
   private final HttpClient httpClient;
@@ -133,6 +134,48 @@ public class AuthService {
             return true;
           }
           onError.accept("Invalid register response");
+          return false;
+        } catch (Exception e) {
+          onError.accept(getExceptionMessage(e));
+          return false;
+        }
+      }
+    };
+  }
+
+  public boolean verifyOtp(String email, String otpCode) throws Exception {
+    JsonObject body = new JsonObject();
+    body.addProperty("email", email);
+    body.addProperty("otp", otpCode);
+
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create(VERIFY_OTP_ENDPOINT))
+        .timeout(Duration.ofSeconds(10))
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(body), StandardCharsets.UTF_8))
+        .build();
+
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    ApiResponse<Void> apiResponse = ApiResponse.fromJson(response.body(), Void.class);
+
+    if (isHttpSuccess(response) && (apiResponse == null || !apiResponse.isError())) {
+      return true;
+    }
+
+    throw new Exception(getResponseMessage(response, apiResponse));
+  }
+
+  public Task<Boolean> verifyOtpAsync(String email, String otpCode, Consumer<String> onSuccess,
+      Consumer<String> onError) {
+    return new Task<Boolean>() {
+      @Override
+      protected Boolean call() {
+        try {
+          if (verifyOtp(email, otpCode)) {
+            onSuccess.accept("OTP verified successfully");
+            return true;
+          }
+          onError.accept("Invalid OTP response");
           return false;
         } catch (Exception e) {
           onError.accept(getExceptionMessage(e));

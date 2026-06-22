@@ -12,6 +12,10 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class RegisterController {
+    public static String pendingOtpEmail;
+    public static String pendingOtpName;
+    public static String pendingOtpPassword;
+
     @FXML private TextField txtEmail;
     @FXML private TextField txtName;
     @FXML private PasswordField txtPassword;
@@ -45,14 +49,19 @@ public class RegisterController {
         }
 
         btnRegister.setDisable(true);
+        RegisterController.pendingOtpEmail = email;
+        RegisterController.pendingOtpName = name;
+        RegisterController.pendingOtpPassword = password;
 
         Task<Boolean> task = authService.registerAsync(email, name, password, successMsg -> {
             Platform.runLater(() -> {
-                lblMessage.setText("Đăng ký thành công. Vui lòng đăng nhập.");
+                lblMessage.setText("Đăng ký thành công. Vui lòng nhập mã OTP 6 ký tự.");
                 try {
-                    MainApp.setRoot("login", "Đăng nhập");
+                    MainApp.setRoot("otp", "Xác thực OTP");
                 } catch (IOException e) {
                     e.printStackTrace();
+                    lblMessage.setText("Đăng ký thành công nhưng không thể mở màn hình OTP.");
+                    btnRegister.setDisable(false);
                 }
             });
         }, errorMsg -> {

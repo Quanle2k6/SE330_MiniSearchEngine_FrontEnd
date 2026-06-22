@@ -393,15 +393,17 @@ public class PrimaryController {
             System.err.println("Save search history skipped: User not logged in");
             return;
         }
-        
-        try {
-            HttpResponse<String> response = HttpClientUtil.post(SEARCH_HISTORY_API_URL, gson.toJson(body));
-            if (response.statusCode() >= 400) {
-                System.err.println("Save search history failed: HTTP " + response.statusCode() + " - " + response.body());
-            }
-        } catch (Exception error) {
-            System.err.println("Save search history failed: " + error.getMessage());
-        }
+
+        HttpClientUtil.postAsync(SEARCH_HISTORY_API_URL, gson.toJson(body))
+                .thenAccept(response -> {
+                    if (response.statusCode() >= 400) {
+                        System.err.println("Save search history failed: HTTP " + response.statusCode() + " - " + response.body());
+                    }
+                })
+                .exceptionally(error -> {
+                    System.err.println("Save search history failed: " + error.getMessage());
+                    return null;
+                });
     }
 
     private void openResultUrl(String rawUrl, String title, String query) {
@@ -712,6 +714,11 @@ public class PrimaryController {
         engine.locationProperty().addListener((obs, oldLoc, newLoc) -> {
             if (mainTabPane.getSelectionModel().getSelectedItem() == browserTab) {
                 urlBar.setText(newLoc);
+            }
+
+            if (oldLoc != null && !oldLoc.isBlank() && newLoc != null && !newLoc.equals(oldLoc)
+                && newLoc.startsWith("http")) {
+                saveUrlHistory(title, newLoc);
             }
         });
 
