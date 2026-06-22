@@ -1,7 +1,20 @@
+error id: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java:_empty_/Label#setStyle#
+file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java
+empty definition using pc, found symbol in pc: _empty_/Label#setStyle#
+empty definition using semanticdb
+empty definition using fallback
+non-local guesses:
+
+offset: 11806
+uri: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/PrimaryController.java
+text:
+```scala
 package javafx;
 
-import java.io.IOException;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -18,9 +31,6 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import javafx.application.Platform;
-import javafx.auth.AuthService;
-import javafx.auth.HttpClientUtil;
-import javafx.auth.UserSession;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -43,10 +53,9 @@ import javafx.scene.web.WebView;
 public class PrimaryController {
 
     private static final String SEARCH_API_URL = "http://localhost:8080/search";
-    private static final String SEARCH_HISTORY_API_URL = "http://localhost:8080/search/history";
-    private static final int HISTORY_PAGE_SIZE = 50;
     private static final DateTimeFormatter HISTORY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    private final HttpClient httpClient = HttpClient.newHttpClient();
     private final Gson gson = new Gson();
     private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
@@ -56,7 +65,6 @@ public class PrimaryController {
     @FXML private Button btnBack;
     @FXML private Button btnForward;
     @FXML private Button btnReload;
-    @FXML private Button btnLogout;
 
     @FXML
     public void initialize() {
@@ -66,11 +74,6 @@ public class PrimaryController {
         });
 
         createNewTab();
-
-        // Nếu đã đăng nhập, tự động mở tab Lịch sử truy cập
-        if (UserSession.getInstance().isLoggedIn()) {
-            openHistoryTab();
-        }
     }
 
     @FXML
@@ -106,39 +109,10 @@ public class PrimaryController {
         Tab selectedTab = mainTabPane.getSelectionModel().getSelectedItem();
         if (selectedTab != null && selectedTab.getUserData() instanceof WebView) {
             WebView browserView = (WebView) selectedTab.getUserData();
-            String normalizedUrl = normalizeUrl(rawUrl);
-            loadUrl(browserView.getEngine(), normalizedUrl);
-            saveUrlHistory("Trang web", normalizedUrl);
+            loadUrl(browserView.getEngine(), rawUrl);
         } else {
             openResultUrl(rawUrl, "Trang web", "");
         }
-    }
-
-    @FXML
-    private void handleLogout(ActionEvent event) {
-        AuthService auth = new AuthService();
-        var task = auth.logoutAsync(msg -> {
-            Platform.runLater(() -> {
-                try {
-                    MainApp.setRoot("login", "Đăng nhập");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        }, err -> {
-            Platform.runLater(() -> {
-                System.err.println("Logout failed: " + err);
-                try {
-                    MainApp.setRoot("login", "Đăng nhập");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-
-        Thread t = new Thread(task);
-        t.setDaemon(true);
-        t.start();
     }
 
     private void updateGlobalControls() {
@@ -168,10 +142,6 @@ public class PrimaryController {
     }
 
     private void createNewTab() {
-        createNewTab(null);
-    }
-
-    private void createNewTab(String initialQuery) {
     Tab newTab = new Tab("Tab mới");
 
     BorderPane tabContentRoot = new BorderPane();
@@ -269,23 +239,21 @@ public class PrimaryController {
     newTab.setContent(tabContentRoot);
     mainTabPane.getTabs().add(newTab);
     mainTabPane.getSelectionModel().select(newTab);
-
-    if (initialQuery != null && !initialQuery.isBlank()) {
-        txtSearch.setText(initialQuery);
-        searchAction.run();
-    }
 }
 
     private void search(String query, VBox vboxResults) {
-        saveQueryHistory(query);
+        addSearchHistory(query);
         Label loading = new Label("Đang tìm kiếm...");
         loading.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
         vboxResults.getChildren().setAll(loading);
 
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20");
-        String url = SEARCH_API_URL + "?query=" + encodedQuery;
-        
-        HttpClientUtil.getAsync(url)
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SEARCH_API_URL + "?query=" + encodedQuery))
+                .GET()
+                .build();
+
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> Platform.runLater(() -> handleSearchResponse(response, vboxResults, query)))
                 .exceptionally(error -> {
                     Platform.runLater(() -> showMessage(vboxResults, "Không thể kết nối tới server localhost:8080."));
@@ -295,12 +263,7 @@ public class PrimaryController {
 
     private void handleSearchResponse(HttpResponse<String> response, VBox vboxResults, String query) {
         if (response.statusCode() != 200) {
-            if(response.statusCode() == 401) {
-                showMessage(vboxResults, "Bạn cần đăng nhập để thực hiện tìm kiếm.");
-            } else {
-                showMessage(vboxResults, "Tìm kiếm thất bại. Mã lỗi: " + response.statusCode());
-                
-            }
+            showMessage(vboxResults, "Tìm kiếm thất bại. Mã lỗi: " + response.statusCode());
             return;
         }
 
@@ -339,7 +302,7 @@ public class PrimaryController {
         title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand;");
         title.setWrapText(true);
         title.setOnMouseEntered(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: true;"));
-        title.setOnMouseExited(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: false;"));
+        title.setOnMouseExited(e -> title.setStyl@@e("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: false;"));
         title.setOnMouseClicked(e -> openResultUrl(item.url, item.title, query));
 
         Label link = new Label(valueOrDefault(item.url, ""));
@@ -368,50 +331,16 @@ public class PrimaryController {
         return value;
     }
 
-    private void saveQueryHistory(String query) {
-        if (query == null || query.isBlank()) return;
-
-        JsonObject body = new JsonObject();
-        body.addProperty("type", "QUERY");
-        body.addProperty("query", query);
-        postSearchHistory(body);
-    }
-
-    private void saveUrlHistory(String title, String url) {
-        if (url == null || url.isBlank()) return;
-
-        JsonObject body = new JsonObject();
-        body.addProperty("type", "URL");
-        body.addProperty("title", valueOrDefault(title, "Trang web"));
-        body.addProperty("url", url);
-        postSearchHistory(body);
-    }
-
-    private void postSearchHistory(JsonObject body) {
-        // Check if user is authenticated before posting
-        if (!UserSession.getInstance().isLoggedIn()) {
-            System.err.println("Save search history skipped: User not logged in");
-            return;
-        }
-
-        HttpClientUtil.postAsync(SEARCH_HISTORY_API_URL, gson.toJson(body))
-                .thenAccept(response -> {
-                    if (response.statusCode() >= 400) {
-                        System.err.println("Save search history failed: HTTP " + response.statusCode() + " - " + response.body());
-                    }
-                })
-                .exceptionally(error -> {
-                    System.err.println("Save search history failed: " + error.getMessage());
-                    return null;
-                });
-    }
-
     private void openResultUrl(String rawUrl, String title, String query) {
         String url = normalizeUrl(rawUrl);
         if (url.isEmpty()) return;
 
+        addHistoryEntry(title, url, query);
         createBrowserTab(title, url);
-        saveUrlHistory(title, url);
+    }
+
+    private void addHistoryEntry(String title, String url, String query) {
+        historyEntries.add(0, new HistoryEntry(LocalDateTime.now(), query, title, url));
     }
 
     private void openHistoryTab() {
@@ -423,6 +352,11 @@ public class PrimaryController {
         }
         mainTabPane.getTabs().add(createHistoryTab());
         mainTabPane.getSelectionModel().selectLast();
+    }
+
+    private void addSearchHistory(String query) {
+        if (query == null || query.isBlank()) return;
+        historyEntries.add(0, new HistoryEntry(LocalDateTime.now(), query, "Search: " + query, ""));
     }
 
     private void navigateSelectedBrowser(int offset) {
@@ -492,30 +426,6 @@ public class PrimaryController {
 
     private void refreshHistoryList(VBox listContainer, String filterType, String filterText) {
         listContainer.getChildren().clear();
-        
-        // Check if user is authenticated
-        if (!UserSession.getInstance().isLoggedIn()) {
-            Label message = new Label("Vui lòng đăng nhập để xem lịch sử tìm kiếm.");
-            message.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
-            listContainer.getChildren().add(message);
-            return;
-        }
-        
-        boolean useApiHistory = true;
-        if (useApiHistory) {
-            Label loading = new Label("Dang tai lich su...");
-            loading.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
-            listContainer.getChildren().add(loading);
-
-            String url = SEARCH_HISTORY_API_URL + "?page=0&size=" + HISTORY_PAGE_SIZE;
-            HttpClientUtil.getAsync(url)
-                    .thenAccept(response -> Platform.runLater(() -> handleHistoryResponse(response, listContainer, filterType, filterText)))
-                    .exceptionally(error -> {
-                        Platform.runLater(() -> showMessage(listContainer, "Khong the tai lich su tu server."));
-                        return null;
-                    });
-            return;
-        }
         if (historyEntries.isEmpty()) {
             Label empty = new Label("Chưa có lịch sử truy cập.");
             empty.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
@@ -573,119 +483,6 @@ public class PrimaryController {
         }
     }
 
-    private void handleHistoryResponse(HttpResponse<String> response, VBox listContainer, String filterType, String filterText) {
-        if (response.statusCode() != 200) {
-            showMessage(listContainer, "Khong the tai lich su tu server. Ma loi: " + response.statusCode());
-            return;
-        }
-
-        try {
-            RestSearchResponse restResponse = gson.fromJson(response.body(), RestSearchResponse.class);
-            if (restResponse == null || restResponse.statusCode >= 400 || restResponse.error != null) {
-                showMessage(listContainer, "Khong the tai lich su tu server.");
-                return;
-            }
-
-            renderHistoryList(listContainer, filterType, filterText, getHistoryItems(restResponse.data));
-        } catch (JsonSyntaxException error) {
-            showMessage(listContainer, "Du lieu lich su tra ve khong dung dinh dang.");
-        }
-    }
-
-    private void renderHistoryList(VBox listContainer, String filterType, String filterText, List<SearchHistoryItem> historyItems) {
-        listContainer.getChildren().clear();
-        if (historyItems.isEmpty()) {
-            Label empty = new Label("Chua co lich su truy cap.");
-            empty.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
-            listContainer.getChildren().add(empty);
-            return;
-        }
-
-        String normalizedFilter = filterText == null ? "" : filterText.trim().toLowerCase();
-        for (SearchHistoryItem item : historyItems) {
-            if (!matchesFilter(item, filterType, normalizedFilter)) continue;
-
-            VBox itemBox = new VBox(4);
-            itemBox.setStyle("-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #fafafa;");
-
-            Label labelTime = new Label(formatVisitedAt(item.visitedAt));
-            labelTime.setStyle("-fx-text-fill: #5f6368; -fx-font-size: 12px;");
-
-            Label labelType = new Label("Loai: " + valueOrDefault(item.type, ""));
-            labelType.setStyle("-fx-text-fill: #202124; -fx-font-size: 13px;");
-
-            Label labelTitle = new Label(getHistoryLabel(item));
-            labelTitle.setStyle("-fx-text-fill: #1a73e8; -fx-font-size: 14px; -fx-cursor: hand;");
-            labelTitle.setWrapText(true);
-            labelTitle.setOnMouseClicked(e -> openHistoryItem(item));
-
-            Label labelUrl = new Label(valueOrDefault(item.url, ""));
-            labelUrl.setWrapText(true);
-            labelUrl.setStyle("-fx-text-fill: #202124; -fx-font-size: 12px;");
-
-            itemBox.getChildren().addAll(labelTime, labelType, labelTitle, labelUrl);
-            listContainer.getChildren().add(itemBox);
-        }
-
-        if (listContainer.getChildren().isEmpty()) {
-            Label empty = new Label("Khong tim thay lich su phu hop voi bo loc.");
-            empty.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
-            listContainer.getChildren().add(empty);
-        }
-    }
-
-    private boolean matchesFilter(SearchHistoryItem item, String filterType, String filterText) {
-        String normalizedFilter = filterText == null ? "" : filterText.trim().toLowerCase();
-        String query = valueOrDefault(item.query, "").toLowerCase();
-        String title = valueOrDefault(item.title, "").toLowerCase();
-        String urlText = valueOrDefault(item.url, "").toLowerCase();
-
-        if (normalizedFilter.isEmpty() || isAllFilter(filterType)) {
-            return normalizedFilter.isEmpty() || query.contains(normalizedFilter) || title.contains(normalizedFilter) || urlText.contains(normalizedFilter);
-        }
-
-        if (isQueryFilter(filterType)) return query.contains(normalizedFilter);
-        if (isTitleFilter(filterType)) return title.contains(normalizedFilter);
-        if ("URL".equals(filterType)) return urlText.contains(normalizedFilter);
-        return false;
-    }
-
-    private boolean isAllFilter(String filterType) {
-        return filterType == null || (!isQueryFilter(filterType) && !isTitleFilter(filterType) && !"URL".equals(filterType));
-    }
-
-    private boolean isQueryFilter(String filterType) {
-        return filterType != null && filterType.startsWith("Tr");
-    }
-
-    private boolean isTitleFilter(String filterType) {
-        return filterType != null && (filterType.startsWith("Ti") || filterType.startsWith("TiÃ"));
-    }
-
-    private String getHistoryLabel(SearchHistoryItem item) {
-        if ("QUERY".equals(item.type)) {
-            return "Query: " + valueOrDefault(item.query, "");
-        }
-        return "Title: " + valueOrDefault(item.title, "Trang web");
-    }
-
-    private String formatVisitedAt(String visitedAt) {
-        return valueOrDefault(visitedAt, "").replace('T', ' ');
-    }
-
-    private void openHistoryItem(SearchHistoryItem item) {
-        if ("QUERY".equals(item.type)) {
-            String query = valueOrDefault(item.query, "");
-            if (!query.isEmpty()) createNewTab(query);
-            return;
-        }
-
-        if ("URL".equals(item.type)) {
-            String url = normalizeUrl(item.url);
-            if (!url.isEmpty()) createBrowserTab(valueOrDefault(item.title, "Trang web"), url);
-        }
-    }
-
     private void createBrowserTab(String title, String url) {
         Tab browserTab = new Tab(title == null || title.isEmpty() ? "Trang web" : (title.length() > 18 ? title.substring(0, 18) + "..." : title));
 
@@ -714,11 +511,6 @@ public class PrimaryController {
         engine.locationProperty().addListener((obs, oldLoc, newLoc) -> {
             if (mainTabPane.getSelectionModel().getSelectedItem() == browserTab) {
                 urlBar.setText(newLoc);
-            }
-
-            if (oldLoc != null && !oldLoc.isBlank() && newLoc != null && !newLoc.equals(oldLoc)
-                && newLoc.startsWith("http")) {
-                saveUrlHistory(title, newLoc);
             }
         });
 
@@ -761,20 +553,6 @@ public class PrimaryController {
         return Collections.emptyList();
     }
 
-    private List<SearchHistoryItem> getHistoryItems(JsonElement data) {
-        if (data == null || data.isJsonNull()) return Collections.emptyList();
-        if (data.isJsonArray()) {
-            return gson.fromJson(data, new TypeToken<List<SearchHistoryItem>>() {}.getType());
-        }
-        if (data.isJsonObject()) {
-            JsonElement items = data.getAsJsonObject().get("items");
-            if (items != null && items.isJsonArray()) {
-                return gson.fromJson(items, new TypeToken<List<SearchHistoryItem>>() {}.getType());
-            }
-        }
-        return Collections.emptyList();
-    }
-
     private static class RestSearchResponse {
         int statusCode;
         String error;
@@ -800,15 +578,6 @@ public class PrimaryController {
         Double score;
     }
 
-    private static class SearchHistoryItem {
-        Long id;
-        String type;
-        String visitedAt;
-        String query;
-        String title;
-        String url;
-    }
-
     private static class HistoryEntry {
         LocalDateTime visitedAt;
         String query;
@@ -823,3 +592,9 @@ public class PrimaryController {
         }
     }
 }
+```
+
+
+#### Short summary: 
+
+empty definition using pc, found symbol in pc: _empty_/Label#setStyle#

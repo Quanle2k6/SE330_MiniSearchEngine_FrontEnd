@@ -1,3 +1,14 @@
+error id: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/MainApp.java:AuthService#
+file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/MainApp.java
+empty definition using pc, found symbol in pc: 
+empty definition using semanticdb
+empty definition using fallback
+non-local guesses:
+
+offset: 424
+uri: file:///D:/UIT/SE330/DA/SE330_MiniSearchEngine_FrontEnd/MiniSearchEngine_FrontEnd/SE330_MiniSearchEngine_UI/minisearchengine_ui/src/main/java/javafx/MainApp.java
+text:
+```scala
 package javafx;
 
 import java.io.IOException;
@@ -15,19 +26,19 @@ public class MainApp extends Application {
 
     private void autoLogin() {
         try {
-            AuthService auth = new AuthService();
+            AuthService@@ auth = new AuthService();
 
             try {
                 auth.register(
-                        "user@example.com",
-                        "User",
+                        "user",
                         "123456");
             } catch (Exception ignored) {
                 // Email đã tồn tại thì bỏ qua
             }
 
             var login = auth.login(
-                    "user@example.com",
+                    "user",
+                    "123456",
                     "123456");
 
             UserSession.getInstance().login(
@@ -76,3 +87,10 @@ public class MainApp extends Application {
     }
 
 }
+
+```
+
+
+#### Short summary: 
+
+empty definition using pc, found symbol in pc: 
