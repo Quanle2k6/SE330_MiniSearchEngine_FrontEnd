@@ -23,7 +23,8 @@ Dự án được hoàn thiện bởi sự đóng góp từ các thành viên:
 ### 🖥️ Backend (BE)
 * **Ngôn ngữ:** Java (100%)
 * **Công cụ quản lý:** Gradle (Kotlin DSL - `build.gradle.kts`)
-* **Thư viện lõi:** * `VietnameseAnalyzer` tích hợp **VnCoreNLP** để xử lý tách từ tiếng Việt chính xác.
+* **Thư viện lõi:**
+    * **VietnameseAnalyzer** tích hợp **VnCoreNLP** để xử lý tách từ tiếng Việt chính xác.
     * **JavaMail Sender** cho cấu hình hệ thống SMTP gửi email tự động.
 
 ### 🎨 Frontend (FE)
@@ -94,4 +95,5 @@ Thực hiện biên dịch dự án bằng Gradle:
 
 3. Kích hoạt chạy Main file của Frontend để hiển thị giao diện CẠCH CẠCH và bắt đầu trải nghiệm tìm kiếm thực tế (fetch real data).
 
-`⚠️ __Lưu ý quan trọng__: Để bộ công cụ tách từ VietnameseAnalyzer hoạt động chuẩn xác không bị lỗi runtime, hãy đảm bảo các file tài nguyên liên quan đến bộ dữ liệu và mô hình phân tích ngôn ngữ trong thư mục data đã nằm đúng đường dẫn yêu cầu của mã nguồn.`
+---
+'⚠️ __Lưu ý quan trọng__: Để bộ công cụ tách từ VietnameseAnalyzer hoạt động chuẩn xác không bị lỗi runtime, hãy đảm bảo các file tài nguyên liên quan đến bộ dữ liệu và mô hình phân tích ngôn ngữ trong thư mục data đã nằm đúng đường dẫn yêu cầu của mã nguồn.'
