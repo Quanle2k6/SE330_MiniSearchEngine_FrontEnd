@@ -178,14 +178,14 @@ public class PrimaryController {
     homeContainer.setAlignment(Pos.CENTER);
     homeContainer.setStyle("-fx-padding: 0 0 50 0;"); // Đẩy nhẹ trọng tâm lên trên cho đẹp
 
-    Label lblLogo = new Label("CẠCH CẠCH");
+    Label lblLogo = new Label("Cạch Cạch");
     lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
 
     HBox searchBarBox = new HBox(10);
     searchBarBox.setAlignment(Pos.CENTER);
 
     TextField txtSearch = new TextField();
-    txtSearch.setPromptText("Tìm kiếm trên Mini Google hoặc nhập một URL...");
+    txtSearch.setPromptText("Tìm kiếm hoặc nhập một URL...");
     txtSearch.setPrefWidth(500);
     txtSearch.setStyle("-fx-font-size: 14px; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #dfe1e5; -fx-padding: 8 15 8 15;");
 

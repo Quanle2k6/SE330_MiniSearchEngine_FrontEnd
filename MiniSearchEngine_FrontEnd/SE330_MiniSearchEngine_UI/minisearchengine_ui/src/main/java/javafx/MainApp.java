@@ -13,34 +13,6 @@ import javafx.stage.Stage;
 public class MainApp extends Application {
     private static Stage stage;
 
-    private void autoLogin() {
-        try {
-            AuthService auth = new AuthService();
-
-            try {
-                auth.register(
-                        "user@example.com",
-                        "User",
-                        "123456");
-            } catch (Exception ignored) {
-                // Email đã tồn tại thì bỏ qua
-            }
-
-            var login = auth.login(
-                    "user@example.com",
-                    "123456");
-
-            UserSession.getInstance().login(
-                    login.user.id,
-                    login.user.email,
-                    login.user.name,
-                    login.access_token);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void start(@SuppressWarnings("exports") Stage s) throws IOException {
         stage = s;
