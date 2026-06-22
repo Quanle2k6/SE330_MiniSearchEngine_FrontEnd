@@ -75,7 +75,7 @@ git clone [https://github.com/Quanle2k6/SE330_MiniSearchEngine_FrontEnd.git](htt
 ```
 
 ### 2. Khởi chạy Backend
-'__Yêu cầu__: Đã cài đặt Java JDK 17 (hoặc mới hơn) trên thiết bị.'
+>__Yêu cầu__: Đã cài đặt Java JDK 17 (hoặc mới hơn) trên thiết bị.
 Di chuyển vào thư mục Backend:
 ```bash
 cd SE330_MiniSearchEngine
@@ -93,4 +93,4 @@ Thực hiện biên dịch dự án bằng Gradle:
 3. Kích hoạt chạy Main file của Frontend để hiển thị giao diện CẠCH CẠCH và bắt đầu trải nghiệm tìm kiếm thực tế (fetch real data).
 
 ---
-'⚠️ **Lưu ý quan trọng**: Để bộ công cụ tách từ VietnameseAnalyzer hoạt động chuẩn xác không bị lỗi runtime, hãy đảm bảo các file tài nguyên liên quan đến bộ dữ liệu và mô hình phân tích ngôn ngữ trong thư mục data đã nằm đúng đường dẫn yêu cầu của mã nguồn.'
+>⚠️ **Lưu ý quan trọng**: Để bộ công cụ tách từ VietnameseAnalyzer hoạt động chuẩn xác không bị lỗi runtime, hãy đảm bảo các file tài nguyên liên quan đến bộ dữ liệu và mô hình phân tích ngôn ngữ trong thư mục data đã nằm đúng đường dẫn yêu cầu của mã nguồn.
