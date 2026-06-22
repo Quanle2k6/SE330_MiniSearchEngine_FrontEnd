@@ -17,6 +17,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.auth.AuthService;
 import javafx.auth.HttpClientUtil;
@@ -39,6 +40,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 
 public class PrimaryController {
 
@@ -66,11 +68,6 @@ public class PrimaryController {
         });
 
         createNewTab();
-
-        // Nếu đã đăng nhập, tự động mở tab Lịch sử truy cập
-        if (UserSession.getInstance().isLoggedIn()) {
-            openHistoryTab();
-        }
     }
 
     @FXML
@@ -108,7 +105,6 @@ public class PrimaryController {
             WebView browserView = (WebView) selectedTab.getUserData();
             String normalizedUrl = normalizeUrl(rawUrl);
             loadUrl(browserView.getEngine(), normalizedUrl);
-            saveUrlHistory("Trang web", normalizedUrl);
         } else {
             openResultUrl(rawUrl, "Trang web", "");
         }
@@ -182,14 +178,14 @@ public class PrimaryController {
     homeContainer.setAlignment(Pos.CENTER);
     homeContainer.setStyle("-fx-padding: 0 0 50 0;"); // Đẩy nhẹ trọng tâm lên trên cho đẹp
 
-    Label lblLogo = new Label("Google");
+    Label lblLogo = new Label("Cạch Cạch");
     lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
 
     HBox searchBarBox = new HBox(10);
     searchBarBox.setAlignment(Pos.CENTER);
 
     TextField txtSearch = new TextField();
-    txtSearch.setPromptText("Tìm kiếm trên Mini Google hoặc nhập một URL...");
+    txtSearch.setPromptText("Tìm kiếm hoặc nhập một URL...");
     txtSearch.setPrefWidth(500);
     txtSearch.setStyle("-fx-font-size: 14px; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #dfe1e5; -fx-padding: 8 15 8 15;");
 
@@ -503,7 +499,7 @@ public class PrimaryController {
         
         boolean useApiHistory = true;
         if (useApiHistory) {
-            Label loading = new Label("Dang tai lich su...");
+            Label loading = new Label("Đang tải lịch sử...");
             loading.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
             listContainer.getChildren().add(loading);
 
@@ -511,7 +507,7 @@ public class PrimaryController {
             HttpClientUtil.getAsync(url)
                     .thenAccept(response -> Platform.runLater(() -> handleHistoryResponse(response, listContainer, filterType, filterText)))
                     .exceptionally(error -> {
-                        Platform.runLater(() -> showMessage(listContainer, "Khong the tai lich su tu server."));
+                        Platform.runLater(() -> showMessage(listContainer, "Không thể tải lịch sử từ server."));
                         return null;
                     });
             return;
@@ -575,27 +571,27 @@ public class PrimaryController {
 
     private void handleHistoryResponse(HttpResponse<String> response, VBox listContainer, String filterType, String filterText) {
         if (response.statusCode() != 200) {
-            showMessage(listContainer, "Khong the tai lich su tu server. Ma loi: " + response.statusCode());
+            showMessage(listContainer, "Không thể tải lịch sử từ server. Mã lỗi: " + response.statusCode());
             return;
         }
 
         try {
             RestSearchResponse restResponse = gson.fromJson(response.body(), RestSearchResponse.class);
             if (restResponse == null || restResponse.statusCode >= 400 || restResponse.error != null) {
-                showMessage(listContainer, "Khong the tai lich su tu server.");
+                showMessage(listContainer, "Không thể tải lịch sử từ server.");
                 return;
             }
 
             renderHistoryList(listContainer, filterType, filterText, getHistoryItems(restResponse.data));
         } catch (JsonSyntaxException error) {
-            showMessage(listContainer, "Du lieu lich su tra ve khong dung dinh dang.");
+            showMessage(listContainer, "Dữ liệu lịch sử trả về không đúng định dạng.");
         }
     }
 
     private void renderHistoryList(VBox listContainer, String filterType, String filterText, List<SearchHistoryItem> historyItems) {
         listContainer.getChildren().clear();
         if (historyItems.isEmpty()) {
-            Label empty = new Label("Chua co lich su truy cap.");
+            Label empty = new Label("Chưa có lịch sử truy cập.");
             empty.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
             listContainer.getChildren().add(empty);
             return;
@@ -611,7 +607,7 @@ public class PrimaryController {
             Label labelTime = new Label(formatVisitedAt(item.visitedAt));
             labelTime.setStyle("-fx-text-fill: #5f6368; -fx-font-size: 12px;");
 
-            Label labelType = new Label("Loai: " + valueOrDefault(item.type, ""));
+            Label labelType = new Label("Loại: " + valueOrDefault(item.type, ""));
             labelType.setStyle("-fx-text-fill: #202124; -fx-font-size: 13px;");
 
             Label labelTitle = new Label(getHistoryLabel(item));
@@ -628,7 +624,7 @@ public class PrimaryController {
         }
 
         if (listContainer.getChildren().isEmpty()) {
-            Label empty = new Label("Khong tim thay lich su phu hop voi bo loc.");
+            Label empty = new Label("Không tìm thấy lịch sử phù hợp với bộ lọc.");
             empty.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
             listContainer.getChildren().add(empty);
         }
@@ -686,7 +682,11 @@ public class PrimaryController {
         }
     }
 
-    private void createBrowserTab(String title, String url) {
+    private WebEngine createBrowserTab(String title, String url) {
+        return createBrowserTab(title, url, false);
+    }
+
+    private WebEngine createBrowserTab(String title, String url, boolean recordInitialLoad) {
         Tab browserTab = new Tab(title == null || title.isEmpty() ? "Trang web" : (title.length() > 18 ? title.substring(0, 18) + "..." : title));
 
         BorderPane browserRoot = new BorderPane();
@@ -695,6 +695,33 @@ public class PrimaryController {
         WebView browserView = new WebView();
         browserTab.setUserData(browserView);
         WebEngine engine = browserView.getEngine();
+        final boolean[] hasCompletedInitialLoad = { false };
+        final String[] pendingHistoryUrl = { null };
+        final String[] lastSavedHistoryUrl = { null };
+        PauseTransition historySaveDelay = new PauseTransition(Duration.millis(1200));
+        Runnable savePendingHistory = () -> {
+            String currentUrl = engine.getLocation();
+            if (!isRecordableUrl(currentUrl)) {
+                currentUrl = pendingHistoryUrl[0];
+            }
+
+            if (pendingHistoryUrl[0] != null
+                    && isRecordableUrl(currentUrl)
+                    && !isSameUrl(lastSavedHistoryUrl[0], currentUrl)) {
+                saveUrlHistory(valueOrDefault(engine.getTitle(), "Trang web"), currentUrl);
+                lastSavedHistoryUrl[0] = currentUrl;
+            }
+
+            pendingHistoryUrl[0] = null;
+        };
+        historySaveDelay.setOnFinished(event -> {
+            Worker.State state = engine.getLoadWorker().getState();
+            if (state != Worker.State.SCHEDULED && state != Worker.State.RUNNING) {
+                savePendingHistory.run();
+            }
+        });
+
+        engine.setCreatePopupHandler(popupFeatures -> createBrowserTab("Trang web", null, true));
 
         // Cập nhật trạng thái cho tab và thanh công cụ khi WebEngine tải dữ liệu
         engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
@@ -707,6 +734,14 @@ public class PrimaryController {
                 if (mainTabPane.getSelectionModel().getSelectedItem() == browserTab) {
                     updateGlobalControls();
                 }
+
+                historySaveDelay.stop();
+                savePendingHistory.run();
+
+                hasCompletedInitialLoad[0] = true;
+            } else if (newState == Worker.State.FAILED || newState == Worker.State.CANCELLED) {
+                historySaveDelay.stop();
+                pendingHistoryUrl[0] = null;
             }
         });
 
@@ -716,9 +751,11 @@ public class PrimaryController {
                 urlBar.setText(newLoc);
             }
 
-            if (oldLoc != null && !oldLoc.isBlank() && newLoc != null && !newLoc.equals(oldLoc)
-                && newLoc.startsWith("http")) {
-                saveUrlHistory(title, newLoc);
+            if ((hasCompletedInitialLoad[0] || recordInitialLoad)
+                    && isRecordableUrl(newLoc)
+                    && !isSameUrl(oldLoc, newLoc)) {
+                pendingHistoryUrl[0] = newLoc;
+                historySaveDelay.playFromStart();
             }
         });
 
@@ -729,12 +766,22 @@ public class PrimaryController {
         mainTabPane.getSelectionModel().select(browserTab);
 
         loadUrl(engine, url);
+        return engine;
     }
 
     private void loadUrl(WebEngine engine, String rawUrl) {
         String normalized = normalizeUrl(rawUrl);
         if (normalized.isEmpty()) return;
         engine.load(normalized);
+    }
+
+    private boolean isRecordableUrl(String url) {
+        return url != null && url.matches("(?i)^https?://.*");
+    }
+
+    private boolean isSameUrl(String firstUrl, String secondUrl) {
+        if (firstUrl == null || secondUrl == null) return false;
+        return firstUrl.equals(secondUrl);
     }
 
     private String normalizeUrl(String rawUrl) {
