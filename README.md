@@ -36,10 +36,7 @@ Dự án được hoàn thiện bởi sự đóng góp từ các thành viên:
 ## 📌 Các tính năng nổi bật
 
 - [x] **Tìm kiếm Tiếng Việt chuyên sâu:** Phân tích ngữ nghĩa và tách từ tiếng Việt thông minh thay vì tìm kiếm thô.
-- [x] **Xác thực người dùng (Authentication):** Đăng nhập và đăng ký tài khoản (Hệ thống tối giản, không yêu cầu phân quyền phức tạp - No Authz).
 - [x] **Quản lý lịch sử:** Tự động lưu trữ lịch sử tìm kiếm gắn liền với từng tài khoản người dùng sau khi tra cứu thành công.
-- [x] **Bản địa hóa thông báo:** Toàn bộ các thông báo lỗi, ngoại lệ (Exception messages) hệ thống được Việt hóa 100% để tăng trải nghiệm người dùng.
-- [x] **Cơ sở dữ liệu mẫu:** Tích hợp sẵn bộ dữ liệu phong phú về **Game** (`game dataset`) trong thư mục dữ liệu phục vụ test tìm kiếm trực quan.
 - [x] **Hệ thống Mail:** Cấu hình SMTP hoạt động mượt mà để gửi thông báo/mã xác nhận.
 
 ---
@@ -96,4 +93,4 @@ Thực hiện biên dịch dự án bằng Gradle:
 3. Kích hoạt chạy Main file của Frontend để hiển thị giao diện CẠCH CẠCH và bắt đầu trải nghiệm tìm kiếm thực tế (fetch real data).
 
 ---
-'⚠️ __Lưu ý quan trọng__: Để bộ công cụ tách từ VietnameseAnalyzer hoạt động chuẩn xác không bị lỗi runtime, hãy đảm bảo các file tài nguyên liên quan đến bộ dữ liệu và mô hình phân tích ngôn ngữ trong thư mục data đã nằm đúng đường dẫn yêu cầu của mã nguồn.'
+'⚠️ **Lưu ý quan trọng**: Để bộ công cụ tách từ VietnameseAnalyzer hoạt động chuẩn xác không bị lỗi runtime, hãy đảm bảo các file tài nguyên liên quan đến bộ dữ liệu và mô hình phân tích ngôn ngữ trong thư mục data đã nằm đúng đường dẫn yêu cầu của mã nguồn.'
