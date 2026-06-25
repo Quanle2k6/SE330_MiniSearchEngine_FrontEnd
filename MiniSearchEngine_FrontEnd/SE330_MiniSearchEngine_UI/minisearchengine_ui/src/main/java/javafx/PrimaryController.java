@@ -48,17 +48,24 @@ public class PrimaryController {
     private static final String SEARCH_HISTORY_API_URL = "http://localhost:8080/search/history";
     private static final int HISTORY_PAGE_SIZE = 50;
     private static final DateTimeFormatter HISTORY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final int FIRST_PAGE = 0;
 
     private final Gson gson = new Gson();
     private final List<HistoryEntry> historyEntries = new ArrayList<>();
 
     // FXML Bindings cho thanh công cụ dùng chung ở phía trên
-    @FXML private TabPane mainTabPane;
-    @FXML private TextField urlBar;
-    @FXML private Button btnBack;
-    @FXML private Button btnForward;
-    @FXML private Button btnReload;
-    @FXML private Button btnLogout;
+    @FXML
+    private TabPane mainTabPane;
+    @FXML
+    private TextField urlBar;
+    @FXML
+    private Button btnBack;
+    @FXML
+    private Button btnForward;
+    @FXML
+    private Button btnReload;
+    @FXML
+    private Button btnLogout;
 
     @FXML
     public void initialize() {
@@ -98,7 +105,8 @@ public class PrimaryController {
     @FXML
     private void handleUrlInput(ActionEvent event) {
         String rawUrl = urlBar.getText().trim();
-        if (rawUrl.isEmpty()) return;
+        if (rawUrl.isEmpty())
+            return;
 
         Tab selectedTab = mainTabPane.getSelectionModel().getSelectedItem();
         if (selectedTab != null && selectedTab.getUserData() instanceof WebView) {
@@ -139,7 +147,8 @@ public class PrimaryController {
 
     private void updateGlobalControls() {
         Tab selectedTab = mainTabPane.getSelectionModel().getSelectedItem();
-        if (selectedTab == null) return;
+        if (selectedTab == null)
+            return;
 
         Object data = selectedTab.getUserData();
         if (data instanceof WebView) {
@@ -168,119 +177,125 @@ public class PrimaryController {
     }
 
     private void createNewTab(String initialQuery) {
-    Tab newTab = new Tab("Tab mới");
+        Tab newTab = new Tab("Tab mới");
 
-    BorderPane tabContentRoot = new BorderPane();
-    tabContentRoot.setStyle("-fx-background-color: #ffffff;");
+        BorderPane tabContentRoot = new BorderPane();
+        tabContentRoot.setStyle("-fx-background-color: #ffffff;");
 
-    // ---- MÀN HÌNH TRANG CHỦ (Ban đầu xếp dọc - VBox) ----
-    VBox homeContainer = new VBox(20);
-    homeContainer.setAlignment(Pos.CENTER);
-    homeContainer.setStyle("-fx-padding: 0 0 50 0;"); // Đẩy nhẹ trọng tâm lên trên cho đẹp
+        // ---- MÀN HÌNH TRANG CHỦ (Ban đầu xếp dọc - VBox) ----
+        VBox homeContainer = new VBox(20);
+        homeContainer.setAlignment(Pos.CENTER);
+        homeContainer.setStyle("-fx-padding: 0 0 50 0;"); // Đẩy nhẹ trọng tâm lên trên cho đẹp
 
-    Label lblLogo = new Label("Cạch Cạch");
-    lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
+        Label lblLogo = new Label("Cạch Cạch");
+        lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
 
-    HBox searchBarBox = new HBox(10);
-    searchBarBox.setAlignment(Pos.CENTER);
+        HBox searchBarBox = new HBox(10);
+        searchBarBox.setAlignment(Pos.CENTER);
 
-    TextField txtSearch = new TextField();
-    txtSearch.setPromptText("Tìm kiếm hoặc nhập một URL...");
-    txtSearch.setPrefWidth(500);
-    txtSearch.setStyle("-fx-font-size: 14px; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #dfe1e5; -fx-padding: 8 15 8 15;");
+        TextField txtSearch = new TextField();
+        txtSearch.setPromptText("Tìm kiếm hoặc nhập một URL...");
+        txtSearch.setPrefWidth(500);
+        txtSearch.setStyle(
+                "-fx-font-size: 14px; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #dfe1e5; -fx-padding: 8 15 8 15;");
 
-    Button btnSearch = new Button("Tìm kiếm");
-    btnSearch.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #f8f9fa; -fx-text-fill: #3c4043; -fx-padding: 8 16 8 16; -fx-cursor: hand; -fx-background-radius: 4;");
+        Button btnSearch = new Button("Tìm kiếm");
+        btnSearch.setStyle(
+                "-fx-background-color: #f8f9fa; -fx-border-color: #f8f9fa; -fx-text-fill: #3c4043; -fx-padding: 8 16 8 16; -fx-cursor: hand; -fx-background-radius: 4;");
 
-    searchBarBox.getChildren().addAll(txtSearch, btnSearch);
-    homeContainer.getChildren().addAll(lblLogo, searchBarBox);
+        searchBarBox.getChildren().addAll(txtSearch, btnSearch);
+        homeContainer.getChildren().addAll(lblLogo, searchBarBox);
 
-    // Mặc định ban đầu hiển thị trang chủ ở giữa màn hình
-    tabContentRoot.setCenter(homeContainer);
+        // Mặc định ban đầu hiển thị trang chủ ở giữa màn hình
+        tabContentRoot.setCenter(homeContainer);
 
-    // ---- MÀN HÌNH KẾT QUẢ (Chuẩn bị sẵn ScrollPane) ----
-    ScrollPane scrollResults = new ScrollPane();
-    scrollResults.setFitToWidth(true);
-    scrollResults.setStyle("-fx-background-color: transparent; -fx-background: white; -fx-border-color: transparent;");
+        // ---- MÀN HÌNH KẾT QUẢ (Chuẩn bị sẵn ScrollPane) ----
+        ScrollPane scrollResults = new ScrollPane();
+        scrollResults.setFitToWidth(true);
+        scrollResults
+                .setStyle("-fx-background-color: transparent; -fx-background: white; -fx-border-color: transparent;");
 
-    VBox vboxResults = new VBox(15);
-    vboxResults.setStyle("-fx-padding: 20 0 20 150;");
-    scrollResults.setContent(vboxResults);
+        VBox vboxResults = new VBox(15);
+        vboxResults.setStyle("-fx-padding: 20 0 20 150;");
+        scrollResults.setContent(vboxResults);
 
-    // Thanh Header chứa Logo + Ô tìm kiếm nằm ngang khi sang trang kết quả
-    HBox topResultBar = new HBox(25);
-    topResultBar.setAlignment(Pos.CENTER_LEFT);
-    topResultBar.setStyle("-fx-padding: 15 20 15 20; -fx-background-color: #ffffff; -fx-border-color: #e4e4e4; -fx-border-width: 0 0 1 0;");
+        // Thanh Header chứa Logo + Ô tìm kiếm nằm ngang khi sang trang kết quả
+        HBox topResultBar = new HBox(25);
+        topResultBar.setAlignment(Pos.CENTER_LEFT);
+        topResultBar.setStyle(
+                "-fx-padding: 15 20 15 20; -fx-background-color: #ffffff; -fx-border-color: #e4e4e4; -fx-border-width: 0 0 1 0;");
 
-    // Hành động xử lý khi bấm tìm kiếm hoặc nhấn Enter
-    Runnable searchAction = () -> {
-        String query = txtSearch.getText().trim();
-        if (query.isEmpty()) {
-            return;
+        // Hành động xử lý khi bấm tìm kiếm hoặc nhấn Enter
+        Runnable searchAction = () -> {
+            String query = txtSearch.getText().trim();
+            if (query.isEmpty()) {
+                return;
+            }
+
+            // 1. Đổi tên tiêu đề Tab thành từ khóa ngắn gọn
+            newTab.setText(query.length() > 10 ? query.substring(0, 10) + "..." : query);
+
+            if (tabContentRoot.getTop() == null) {
+                homeContainer.getChildren().clear();
+
+                lblLogo.setStyle(
+                        "-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1a73e8; -fx-cursor: hand;");
+
+                // Đổi căn lề thanh tìm kiếm về bên trái thay vì ở giữa
+                searchBarBox.setAlignment(Pos.CENTER_LEFT);
+                txtSearch.setPrefWidth(600); // Kéo dài ô nhập liệu ở trang kết quả cho rộng rãi
+
+                // Thêm Logo và Ô tìm kiếm nằm ngang sát nhau cạnh trên
+                topResultBar.getChildren().addAll(lblLogo, searchBarBox);
+
+                // Cấu trúc lại BorderPane: Thanh kiếm tìm đưa lên TOP, kết quả đưa vào CENTER
+                tabContentRoot.setTop(topResultBar);
+                tabContentRoot.setCenter(scrollResults);
+            }
+            saveQueryHistory(query);
+
+            // 3. Tiến hành xóa kết quả cũ và gọi API lấy dữ liệu mới (Từ khóa vẫn giữ
+            // nguyên trong txtSearch)
+            vboxResults.getChildren().clear();
+            search(query, FIRST_PAGE, vboxResults);
+        };
+
+        // Sự kiện Click Logo để quay lại trang chủ của Tab đó (nếu cần thiết)
+        lblLogo.setOnMouseClicked(e -> {
+            if (tabContentRoot.getTop() != null) {
+                topResultBar.getChildren().clear();
+                lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
+                searchBarBox.setAlignment(Pos.CENTER);
+                txtSearch.setPrefWidth(500);
+
+                homeContainer.getChildren().addAll(lblLogo, searchBarBox);
+                tabContentRoot.setTop(null);
+                tabContentRoot.setCenter(homeContainer);
+                newTab.setText("Tab mới");
+            }
+        });
+
+        btnSearch.setOnAction(e -> searchAction.run());
+        txtSearch.setOnAction(e -> searchAction.run());
+
+        newTab.setContent(tabContentRoot);
+        mainTabPane.getTabs().add(newTab);
+        mainTabPane.getSelectionModel().select(newTab);
+
+        if (initialQuery != null && !initialQuery.isBlank()) {
+            txtSearch.setText(initialQuery);
+            searchAction.run();
         }
-
-        // 1. Đổi tên tiêu đề Tab thành từ khóa ngắn gọn
-        newTab.setText(query.length() > 10 ? query.substring(0, 10) + "..." : query);
-
-        if (tabContentRoot.getTop() == null) {
-            homeContainer.getChildren().clear();
-
-            lblLogo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1a73e8; -fx-cursor: hand;");
-            
-            // Đổi căn lề thanh tìm kiếm về bên trái thay vì ở giữa
-            searchBarBox.setAlignment(Pos.CENTER_LEFT);
-            txtSearch.setPrefWidth(600); // Kéo dài ô nhập liệu ở trang kết quả cho rộng rãi
-
-            // Thêm Logo và Ô tìm kiếm nằm ngang sát nhau cạnh trên
-            topResultBar.getChildren().addAll(lblLogo, searchBarBox);
-
-            // Cấu trúc lại BorderPane: Thanh kiếm tìm đưa lên TOP, kết quả đưa vào CENTER
-            tabContentRoot.setTop(topResultBar);
-            tabContentRoot.setCenter(scrollResults);
-        }
-
-        // 3. Tiến hành xóa kết quả cũ và gọi API lấy dữ liệu mới (Từ khóa vẫn giữ nguyên trong txtSearch)
-        vboxResults.getChildren().clear();
-        search(query, vboxResults);
-    };
-
-    // Sự kiện Click Logo để quay lại trang chủ của Tab đó (nếu cần thiết)
-    lblLogo.setOnMouseClicked(e -> {
-        if (tabContentRoot.getTop() != null) {
-            topResultBar.getChildren().clear();
-            lblLogo.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;");
-            searchBarBox.setAlignment(Pos.CENTER);
-            txtSearch.setPrefWidth(500);
-            
-            homeContainer.getChildren().addAll(lblLogo, searchBarBox);
-            tabContentRoot.setTop(null);
-            tabContentRoot.setCenter(homeContainer);
-            newTab.setText("Tab mới");
-        }
-    });
-
-    btnSearch.setOnAction(e -> searchAction.run());
-    txtSearch.setOnAction(e -> searchAction.run());
-
-    newTab.setContent(tabContentRoot);
-    mainTabPane.getTabs().add(newTab);
-    mainTabPane.getSelectionModel().select(newTab);
-
-    if (initialQuery != null && !initialQuery.isBlank()) {
-        txtSearch.setText(initialQuery);
-        searchAction.run();
     }
-}
 
-    private void search(String query, VBox vboxResults) {
-        saveQueryHistory(query);
+    private void search(String query, int page, VBox vboxResults) {
         Label loading = new Label("Đang tìm kiếm...");
         loading.setStyle("-fx-text-fill: #4d5156; -fx-font-size: 14px;");
         vboxResults.getChildren().setAll(loading);
 
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20");
-        String url = SEARCH_API_URL + "?query=" + encodedQuery;
-        
+        String url = SEARCH_API_URL + "?query=" + encodedQuery + "&page=" + page + "&size=10";
+
         HttpClientUtil.getAsync(url)
                 .thenAccept(response -> Platform.runLater(() -> handleSearchResponse(response, vboxResults, query)))
                 .exceptionally(error -> {
@@ -291,11 +306,11 @@ public class PrimaryController {
 
     private void handleSearchResponse(HttpResponse<String> response, VBox vboxResults, String query) {
         if (response.statusCode() != 200) {
-            if(response.statusCode() == 401) {
+            if (response.statusCode() == 401) {
                 showMessage(vboxResults, "Bạn cần đăng nhập để thực hiện tìm kiếm.");
             } else {
                 showMessage(vboxResults, "Tìm kiếm thất bại. Mã lỗi: " + response.statusCode());
-                
+
             }
             return;
         }
@@ -308,21 +323,121 @@ public class PrimaryController {
             }
 
             if (restResponse.statusCode >= 400 || restResponse.error != null) {
-                String message = restResponse.message == null ? restResponse.error : String.valueOf(restResponse.message);
+                String message = restResponse.message == null ? restResponse.error
+                        : String.valueOf(restResponse.message);
                 showMessage(vboxResults, valueOrDefault(message, restResponse.error));
                 return;
             }
 
-            List<ResSearchItemDTO> items = getSearchItems(restResponse.data);
-            if (items.isEmpty()) {
-                showMessage(vboxResults, "Không tìm thấy kết quả phù hợp.");
+            ResSearchListDTO searchData = gson.fromJson(restResponse.data, ResSearchListDTO.class);
+
+            if (searchData == null) {
+                showMessage(vboxResults, "Dữ liệu trả về không hợp lệ.");
+                return;
+            }
+
+            List<ResSearchItemDTO> items = searchData.items;
+
+            long totalResults = searchData.totalResults;
+            int currentPage = searchData.page;
+            int pageSize = searchData.size;
+
+            if (pageSize <= 0) {
+                showMessage(vboxResults, "Dữ liệu phân trang không hợp lệ.");
+                return;
+            }
+
+            int totalPages = Math.max(
+                    1,
+                    (int) Math.ceil((double) totalResults / pageSize));
+
+            if (currentPage >= totalPages) {
+                showMessage(
+                        vboxResults,
+                        "Trang không tồn tại.");
+                return;
+            }
+
+            if (items == null || items.isEmpty()) {
+                showMessage(
+                        vboxResults,
+                        "Không tìm thấy kết quả phù hợp.");
                 return;
             }
 
             vboxResults.getChildren().clear();
+            // Label resultInfo = new Label(
+            // "Tìm thấy " + totalResults + " kết quả");
+
+            // resultInfo.setStyle(
+            // "-fx-text-fill: #70757a;" +
+            // "-fx-font-size: 13px;");
+
+            // vboxResults.getChildren().add(resultInfo);
             for (ResSearchItemDTO item : items) {
-                vboxResults.getChildren().add(createResultCard(item, query));
+                vboxResults.getChildren().add(
+                        createResultCard(item, query));
             }
+
+            if (totalPages > 1) {
+
+                HBox pagination = new HBox(5);
+                pagination.setAlignment(Pos.CENTER);
+
+                Button prevBtn = new Button("<< Prev");
+                prevBtn.setDisable(currentPage == 0);
+
+                prevBtn.setOnAction(e -> search(query, currentPage - 1, vboxResults));
+
+                pagination.getChildren().add(prevBtn);
+
+                // Tối đa 6 nút trang
+                int maxPagesToShow = 3;
+
+                int startPage = Math.max(0, currentPage - maxPagesToShow / 2);
+
+                int endPage = Math.min(totalPages, startPage + maxPagesToShow);
+
+                // Nếu gần cuối thì kéo cửa sổ về cuối
+                if (endPage - startPage < maxPagesToShow) {
+                    startPage = Math.max(
+                            0,
+                            endPage - maxPagesToShow);
+                }
+
+                for (int i = startPage; i < endPage; i++) {
+
+                    int pageIndex = i;
+
+                    Button pageBtn = new Button(String.valueOf(i + 1));
+
+                    // Highlight trang hiện tại
+                    if (i == currentPage) {
+                        pageBtn.setDisable(true);
+                        pageBtn.setStyle(
+                                "-fx-background-color: #1a73e8;" +
+                                        "-fx-text-fill: white;");
+                    } else {
+                        pageBtn.setOnAction(e -> search(query, pageIndex, vboxResults));
+                    }
+
+                    pagination.getChildren().add(pageBtn);
+                }
+
+                Button nextBtn = new Button("Next >>");
+
+                nextBtn.setDisable(currentPage >= totalPages - 1);
+
+                nextBtn.setOnAction(e -> search(query, currentPage + 1, vboxResults));
+
+                pagination.getChildren().add(nextBtn);
+
+                pagination.setPrefWidth(1000);
+                // pagination.setAlignment(Pos.CENTER);
+
+                vboxResults.getChildren().add(pagination);
+            }
+
         } catch (JsonSyntaxException error) {
             showMessage(vboxResults, "Dữ liệu trả về từ server không đúng định dạng.");
         }
@@ -334,8 +449,10 @@ public class PrimaryController {
         Label title = new Label(valueOrDefault(item.title, "(Không có tiêu đề)"));
         title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand;");
         title.setWrapText(true);
-        title.setOnMouseEntered(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: true;"));
-        title.setOnMouseExited(e -> title.setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: false;"));
+        title.setOnMouseEntered(e -> title
+                .setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: true;"));
+        title.setOnMouseExited(e -> title
+                .setStyle("-fx-text-fill: #1a0dab; -fx-font-size: 16px; -fx-cursor: hand; -fx-underline: false;"));
         title.setOnMouseClicked(e -> openResultUrl(item.url, item.title, query));
 
         Label link = new Label(valueOrDefault(item.url, ""));
@@ -365,7 +482,8 @@ public class PrimaryController {
     }
 
     private void saveQueryHistory(String query) {
-        if (query == null || query.isBlank()) return;
+        if (query == null || query.isBlank())
+            return;
 
         JsonObject body = new JsonObject();
         body.addProperty("type", "QUERY");
@@ -374,7 +492,8 @@ public class PrimaryController {
     }
 
     private void saveUrlHistory(String title, String url) {
-        if (url == null || url.isBlank()) return;
+        if (url == null || url.isBlank())
+            return;
 
         JsonObject body = new JsonObject();
         body.addProperty("type", "URL");
@@ -393,7 +512,8 @@ public class PrimaryController {
         HttpClientUtil.postAsync(SEARCH_HISTORY_API_URL, gson.toJson(body))
                 .thenAccept(response -> {
                     if (response.statusCode() >= 400) {
-                        System.err.println("Save search history failed: HTTP " + response.statusCode() + " - " + response.body());
+                        System.err.println(
+                                "Save search history failed: HTTP " + response.statusCode() + " - " + response.body());
                     }
                 })
                 .exceptionally(error -> {
@@ -404,7 +524,8 @@ public class PrimaryController {
 
     private void openResultUrl(String rawUrl, String title, String query) {
         String url = normalizeUrl(rawUrl);
-        if (url.isEmpty()) return;
+        if (url.isEmpty())
+            return;
 
         createBrowserTab(title, url);
         saveUrlHistory(title, url);
@@ -423,10 +544,12 @@ public class PrimaryController {
 
     private void navigateSelectedBrowser(int offset) {
         Tab selected = mainTabPane.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
+        if (selected == null)
+            return;
         Object data = selected.getUserData();
-        if (!(data instanceof WebView)) return;
-        
+        if (!(data instanceof WebView))
+            return;
+
         WebHistory history = ((WebView) data).getEngine().getHistory();
         int index = history.getCurrentIndex() + offset;
         if (index >= 0 && index < history.getEntries().size()) {
@@ -436,7 +559,8 @@ public class PrimaryController {
 
     private void reloadSelectedBrowser() {
         Tab selected = mainTabPane.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
+        if (selected == null)
+            return;
         Object data = selected.getUserData();
         if (data instanceof WebView) {
             ((WebView) data).getEngine().reload();
@@ -451,17 +575,20 @@ public class PrimaryController {
         HBox filterBar = new HBox(10);
         filterBar.setAlignment(Pos.CENTER_LEFT);
 
-        ComboBox<String> filterType = new ComboBox<>(FXCollections.observableArrayList("Tất cả", "Truy vấn", "Tiêu đề", "URL"));
+        ComboBox<String> filterType = new ComboBox<>(
+                FXCollections.observableArrayList("Tất cả", "Truy vấn", "Tiêu đề", "URL"));
         filterType.setValue("Tất cả");
         filterType.setPrefWidth(120);
 
         TextField filterField = new TextField();
         filterField.setPromptText("Nhập từ khóa lọc...");
         filterField.setPrefWidth(280);
-        filterField.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dfe1e5; -fx-padding: 6 10 6 10;");
+        filterField.setStyle(
+                "-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dfe1e5; -fx-padding: 6 10 6 10;");
 
         Button btnFilter = new Button("Lọc");
-        btnFilter.setStyle("-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
+        btnFilter.setStyle(
+                "-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 4;");
 
         filterBar.getChildren().addAll(filterType, filterField, btnFilter);
 
@@ -475,7 +602,8 @@ public class PrimaryController {
         root.setTop(filterBar);
         root.setCenter(scrollPane);
 
-        Consumer<Void> refresh = ignored -> refreshHistoryList(listContainer, filterType.getValue(), filterField.getText().trim());
+        Consumer<Void> refresh = ignored -> refreshHistoryList(listContainer, filterType.getValue(),
+                filterField.getText().trim());
         btnFilter.setOnAction(e -> refresh.accept(null));
         filterField.setOnAction(e -> refresh.accept(null));
         filterType.setOnAction(e -> refresh.accept(null));
@@ -488,7 +616,7 @@ public class PrimaryController {
 
     private void refreshHistoryList(VBox listContainer, String filterType, String filterText) {
         listContainer.getChildren().clear();
-        
+
         // Check if user is authenticated
         if (!UserSession.getInstance().isLoggedIn()) {
             Label message = new Label("Vui lòng đăng nhập để xem lịch sử tìm kiếm.");
@@ -496,7 +624,7 @@ public class PrimaryController {
             listContainer.getChildren().add(message);
             return;
         }
-        
+
         boolean useApiHistory = true;
         if (useApiHistory) {
             Label loading = new Label("Đang tải lịch sử...");
@@ -505,7 +633,8 @@ public class PrimaryController {
 
             String url = SEARCH_HISTORY_API_URL + "?page=0&size=" + HISTORY_PAGE_SIZE;
             HttpClientUtil.getAsync(url)
-                    .thenAccept(response -> Platform.runLater(() -> handleHistoryResponse(response, listContainer, filterType, filterText)))
+                    .thenAccept(response -> Platform
+                            .runLater(() -> handleHistoryResponse(response, listContainer, filterType, filterText)))
                     .exceptionally(error -> {
                         Platform.runLater(() -> showMessage(listContainer, "Không thể tải lịch sử từ server."));
                         return null;
@@ -521,10 +650,12 @@ public class PrimaryController {
 
         String normalizedFilter = filterText == null ? "" : filterText.trim().toLowerCase();
         for (HistoryEntry entry : historyEntries) {
-            if (!matchesFilter(entry, filterType, normalizedFilter)) continue;
+            if (!matchesFilter(entry, filterType, normalizedFilter))
+                continue;
 
             VBox itemBox = new VBox(4);
-            itemBox.setStyle("-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #fafafa;");
+            itemBox.setStyle(
+                    "-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #fafafa;");
 
             Label labelTime = new Label(HISTORY_FORMATTER.format(entry.visitedAt));
             labelTime.setStyle("-fx-text-fill: #5f6368; -fx-font-size: 12px;");
@@ -558,18 +689,24 @@ public class PrimaryController {
         String urlText = valueOrDefault(entry.url, "").toLowerCase();
 
         if (normalizedFilter.isEmpty() || "Tất cả".equals(filterType)) {
-            return normalizedFilter.isEmpty() || query.contains(normalizedFilter) || title.contains(normalizedFilter) || urlText.contains(normalizedFilter);
+            return normalizedFilter.isEmpty() || query.contains(normalizedFilter) || title.contains(normalizedFilter)
+                    || urlText.contains(normalizedFilter);
         }
 
         switch (filterType) {
-            case "Truy vấn": return query.contains(normalizedFilter);
-            case "Tiêu đề": return title.contains(normalizedFilter);
-            case "URL": return urlText.contains(normalizedFilter);
-            default: return false;
+            case "Truy vấn":
+                return query.contains(normalizedFilter);
+            case "Tiêu đề":
+                return title.contains(normalizedFilter);
+            case "URL":
+                return urlText.contains(normalizedFilter);
+            default:
+                return false;
         }
     }
 
-    private void handleHistoryResponse(HttpResponse<String> response, VBox listContainer, String filterType, String filterText) {
+    private void handleHistoryResponse(HttpResponse<String> response, VBox listContainer, String filterType,
+            String filterText) {
         if (response.statusCode() != 200) {
             showMessage(listContainer, "Không thể tải lịch sử từ server. Mã lỗi: " + response.statusCode());
             return;
@@ -588,7 +725,8 @@ public class PrimaryController {
         }
     }
 
-    private void renderHistoryList(VBox listContainer, String filterType, String filterText, List<SearchHistoryItem> historyItems) {
+    private void renderHistoryList(VBox listContainer, String filterType, String filterText,
+            List<SearchHistoryItem> historyItems) {
         listContainer.getChildren().clear();
         if (historyItems.isEmpty()) {
             Label empty = new Label("Chưa có lịch sử truy cập.");
@@ -599,10 +737,12 @@ public class PrimaryController {
 
         String normalizedFilter = filterText == null ? "" : filterText.trim().toLowerCase();
         for (SearchHistoryItem item : historyItems) {
-            if (!matchesFilter(item, filterType, normalizedFilter)) continue;
+            if (!matchesFilter(item, filterType, normalizedFilter))
+                continue;
 
             VBox itemBox = new VBox(4);
-            itemBox.setStyle("-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #fafafa;");
+            itemBox.setStyle(
+                    "-fx-padding: 12; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-background-color: #fafafa;");
 
             Label labelTime = new Label(formatVisitedAt(item.visitedAt));
             labelTime.setStyle("-fx-text-fill: #5f6368; -fx-font-size: 12px;");
@@ -637,17 +777,22 @@ public class PrimaryController {
         String urlText = valueOrDefault(item.url, "").toLowerCase();
 
         if (normalizedFilter.isEmpty() || isAllFilter(filterType)) {
-            return normalizedFilter.isEmpty() || query.contains(normalizedFilter) || title.contains(normalizedFilter) || urlText.contains(normalizedFilter);
+            return normalizedFilter.isEmpty() || query.contains(normalizedFilter) || title.contains(normalizedFilter)
+                    || urlText.contains(normalizedFilter);
         }
 
-        if (isQueryFilter(filterType)) return query.contains(normalizedFilter);
-        if (isTitleFilter(filterType)) return title.contains(normalizedFilter);
-        if ("URL".equals(filterType)) return urlText.contains(normalizedFilter);
+        if (isQueryFilter(filterType))
+            return query.contains(normalizedFilter);
+        if (isTitleFilter(filterType))
+            return title.contains(normalizedFilter);
+        if ("URL".equals(filterType))
+            return urlText.contains(normalizedFilter);
         return false;
     }
 
     private boolean isAllFilter(String filterType) {
-        return filterType == null || (!isQueryFilter(filterType) && !isTitleFilter(filterType) && !"URL".equals(filterType));
+        return filterType == null
+                || (!isQueryFilter(filterType) && !isTitleFilter(filterType) && !"URL".equals(filterType));
     }
 
     private boolean isQueryFilter(String filterType) {
@@ -672,13 +817,15 @@ public class PrimaryController {
     private void openHistoryItem(SearchHistoryItem item) {
         if ("QUERY".equals(item.type)) {
             String query = valueOrDefault(item.query, "");
-            if (!query.isEmpty()) createNewTab(query);
+            if (!query.isEmpty())
+                createNewTab(query);
             return;
         }
 
         if ("URL".equals(item.type)) {
             String url = normalizeUrl(item.url);
-            if (!url.isEmpty()) createBrowserTab(valueOrDefault(item.title, "Trang web"), url);
+            if (!url.isEmpty())
+                createBrowserTab(valueOrDefault(item.title, "Trang web"), url);
         }
     }
 
@@ -687,7 +834,8 @@ public class PrimaryController {
     }
 
     private WebEngine createBrowserTab(String title, String url, boolean recordInitialLoad) {
-        Tab browserTab = new Tab(title == null || title.isEmpty() ? "Trang web" : (title.length() > 18 ? title.substring(0, 18) + "..." : title));
+        Tab browserTab = new Tab(title == null || title.isEmpty() ? "Trang web"
+                : (title.length() > 18 ? title.substring(0, 18) + "..." : title));
 
         BorderPane browserRoot = new BorderPane();
         browserRoot.setStyle("-fx-background-color: #ffffff;");
@@ -730,7 +878,7 @@ public class PrimaryController {
                 if (pageTitle != null) {
                     browserTab.setText(pageTitle.length() > 18 ? pageTitle.substring(0, 18) + "..." : pageTitle);
                 }
-                
+
                 if (mainTabPane.getSelectionModel().getSelectedItem() == browserTab) {
                     updateGlobalControls();
                 }
@@ -771,7 +919,8 @@ public class PrimaryController {
 
     private void loadUrl(WebEngine engine, String rawUrl) {
         String normalized = normalizeUrl(rawUrl);
-        if (normalized.isEmpty()) return;
+        if (normalized.isEmpty())
+            return;
         engine.load(normalized);
     }
 
@@ -780,27 +929,33 @@ public class PrimaryController {
     }
 
     private boolean isSameUrl(String firstUrl, String secondUrl) {
-        if (firstUrl == null || secondUrl == null) return false;
+        if (firstUrl == null || secondUrl == null)
+            return false;
         return firstUrl.equals(secondUrl);
     }
 
     private String normalizeUrl(String rawUrl) {
         String url = valueOrDefault(rawUrl, "").trim();
-        if (url.isEmpty()) return "";
-        if (!url.matches("(?i)^[a-z][a-z0-9+.-]*://.*")) return "https://" + url;
+        if (url.isEmpty())
+            return "";
+        if (!url.matches("(?i)^[a-z][a-z0-9+.-]*://.*"))
+            return "https://" + url;
         return url;
     }
 
     private List<ResSearchItemDTO> getSearchItems(JsonElement data) {
-        if (data == null || data.isJsonNull()) return Collections.emptyList();
+        if (data == null || data.isJsonNull())
+            return Collections.emptyList();
         if (data.isJsonArray()) {
-            return gson.fromJson(data, new TypeToken<List<ResSearchItemDTO>>() {}.getType());
+            return gson.fromJson(data, new TypeToken<List<ResSearchItemDTO>>() {
+            }.getType());
         }
         if (data.isJsonObject()) {
             JsonObject dataObject = data.getAsJsonObject();
             JsonElement items = dataObject.get("items");
             if (items != null && items.isJsonArray()) {
-                return gson.fromJson(items, new TypeToken<List<ResSearchItemDTO>>() {}.getType());
+                return gson.fromJson(items, new TypeToken<List<ResSearchItemDTO>>() {
+                }.getType());
             }
             ResSearchItemDTO item = gson.fromJson(dataObject, ResSearchItemDTO.class);
             return item == null ? Collections.emptyList() : Collections.singletonList(item);
@@ -809,14 +964,17 @@ public class PrimaryController {
     }
 
     private List<SearchHistoryItem> getHistoryItems(JsonElement data) {
-        if (data == null || data.isJsonNull()) return Collections.emptyList();
+        if (data == null || data.isJsonNull())
+            return Collections.emptyList();
         if (data.isJsonArray()) {
-            return gson.fromJson(data, new TypeToken<List<SearchHistoryItem>>() {}.getType());
+            return gson.fromJson(data, new TypeToken<List<SearchHistoryItem>>() {
+            }.getType());
         }
         if (data.isJsonObject()) {
             JsonElement items = data.getAsJsonObject().get("items");
             if (items != null && items.isJsonArray()) {
-                return gson.fromJson(items, new TypeToken<List<SearchHistoryItem>>() {}.getType());
+                return gson.fromJson(items, new TypeToken<List<SearchHistoryItem>>() {
+                }.getType());
             }
         }
         return Collections.emptyList();
